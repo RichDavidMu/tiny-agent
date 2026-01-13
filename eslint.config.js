@@ -3,6 +3,8 @@ import eslint from '@eslint/js';
 import pluginN from 'eslint-plugin-n';
 import pluginImportX from 'eslint-plugin-import-x';
 import pluginRegExp from 'eslint-plugin-regexp';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 import { defineConfig } from 'eslint/config';
 import globals from 'globals';
@@ -29,7 +31,6 @@ export default defineConfig(
       },
       globals: {
         ...globals.es2023,
-        ...globals.node,
       },
     },
     settings: {
@@ -183,9 +184,68 @@ export default defineConfig(
       '@typescript-eslint/ban-ts-comment': 'off',
     },
   },
+  // ========================================
+  // Node.js 项目配置
+  // ========================================
+  {
+    name: 'nodejs-projects',
+    files: ['packages/!(web-app)/**/*.?([cm])[jt]s?(x)'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
+  // ========================================
+  // React/前端项目配置
+  // ========================================
+  {
+    name: 'react-projects',
+    files: ['packages/web-app/**/*.{ts,tsx}'],
+    ignores: ['**/vite.config.ts'],
+    plugins: {
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
+    },
+    languageOptions: {
+      parserOptions: {
+        project: ['./packages/web-app/tsconfig.app.json'],
+      },
+      globals: {
+        ...globals.browser,
+      },
+    },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      // 前端项目中禁用 Node.js 相关规则
+      'n/no-exports-assign': 'off',
+      'n/no-unpublished-bin': 'off',
+      'n/no-unsupported-features/es-builtins': 'off',
+      'n/process-exit-as-throw': 'off',
+      'n/hashbang': 'off',
+      'n/no-missing-require': 'off',
+      'n/no-extraneous-import': 'off',
+      'n/no-extraneous-require': 'off',
+      'n/prefer-node-protocol': 'off',
+      // React 组件不需要显式的返回类型
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+    },
+  },
+  // 必须放在最后，覆盖前面的配置
   {
     name: 'disables/typechecking',
-    files: ['**/*.js', '**/*.mjs', '**/*.cjs', '**/*.d.ts', '**/*.d.cts', 'docs/**', 'scripts/**'],
+    files: [
+      '**/*.js',
+      '**/*.mjs',
+      '**/*.cjs',
+      '**/*.d.ts',
+      '**/*.d.cts',
+      'docs/**',
+      'scripts/**',
+      '**/vite.config.ts',
+      '**/eslint.config.js',
+    ],
     languageOptions: {
       parserOptions: {
         project: false,
