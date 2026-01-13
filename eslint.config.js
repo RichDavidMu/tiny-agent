@@ -153,7 +153,7 @@ export default defineConfig(
     },
   },
   {
-    name: 'vite/globals',
+    name: 'globals',
     files: ['packages/**/*.?([cm])[jt]s?(x)'],
     ignores: ['**/__tests__/**'],
     rules: {
