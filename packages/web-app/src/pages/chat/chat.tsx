@@ -8,6 +8,8 @@ interface Message {
   content: string;
 }
 
+const MODEL_ID = 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC';
+
 function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -15,6 +17,7 @@ function Chat() {
   const [isInitializing, setIsInitializing] = useState(false);
   const [initProgress, setInitProgress] = useState('');
   const [engine, setEngine] = useState<webllm.MLCEngineInterface | null>(null);
+  const [isModelCached, setIsModelCached] = useState<boolean | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -25,19 +28,33 @@ function Chat() {
     scrollToBottom();
   }, [messages]);
 
+  // Check if model is cached on component mount
+  useEffect(() => {
+    const checkCache = async () => {
+      try {
+        const cached = await webllm.hasModelInCache(MODEL_ID);
+        setIsModelCached(cached);
+      } catch {
+        setIsModelCached(false);
+      }
+    };
+    checkCache();
+  }, []);
+
   const initializeEngine = async () => {
     if (engine) return;
 
     setIsInitializing(true);
-    setInitProgress('Initializing WebLLM...');
+    setInitProgress(isModelCached ? 'Loading model from cache...' : 'Downloading model...');
 
     try {
-      const newEngine = await webllm.CreateMLCEngine('Qwen2.5-0.5B-Instruct-q4f16_1-MLC', {
+      const newEngine = await webllm.CreateMLCEngine(MODEL_ID, {
         initProgressCallback: (progress) => {
           setInitProgress(progress.text);
         },
       });
       setEngine(newEngine);
+      setIsModelCached(true);
       setInitProgress('Model loaded successfully!');
       setTimeout(() => setIsInitializing(false), 1000);
     } catch (error) {
@@ -101,10 +118,12 @@ function Chat() {
               onClick={initializeEngine}
               className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
             >
-              Load AI Model
+              {isModelCached ? 'Load AI Model (Cached)' : 'Load AI Model'}
             </button>
             <p className="text-sm text-muted-foreground italic">
-              Note: The model (~400MB) will be downloaded and cached in your browser on first load.
+              {isModelCached
+                ? 'Model is cached locally. Loading will be fast.'
+                : 'Note: The model (~400MB) will be downloaded and cached in your browser on first load.'}
             </p>
           </div>
         )}
