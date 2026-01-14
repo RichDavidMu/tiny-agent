@@ -100,7 +100,7 @@ function Chat() {
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col">
-      <div className="container flex h-full max-w-4xl flex-col py-4">
+      <div className="mx-auto flex h-full max-w-4xl flex-col px-4 py-4">
         {/* Welcome Screen */}
         {!engine && !isInitializing && (
           <div className="flex flex-1 flex-col items-center justify-center space-y-4 text-center">

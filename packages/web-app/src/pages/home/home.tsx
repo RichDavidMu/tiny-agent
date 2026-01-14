@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 
 function Home() {
   return (
-    <div className="container max-w-screen-2xl py-8">
+    <div className="mx-auto max-w-screen-2xl px-4 py-8 sm:px-6 lg:px-8">
       {/* Hero Section */}
       <section className="flex flex-col items-center justify-center space-y-4 py-24 text-center md:py-32">
         <h1 className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-4xl font-extrabold text-transparent sm:text-5xl md:text-6xl lg:text-7xl">

@@ -6,10 +6,11 @@
   "tailwind": {
     "config": "tailwind.config.js",
     "css": "src/index.css",
-    "baseColor": "slate",
+    "baseColor": "neutral",
     "cssVariables": true,
     "prefix": "omw"
   },
+  "iconLibrary": "lucide",
   "registries": {
     "@prompt-kit": "https://www.prompt-kit.com/c/{name}.json"
   },
