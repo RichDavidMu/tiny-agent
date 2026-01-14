@@ -154,6 +154,8 @@ shadcn/ui 配置文件。
 
 ### prompt-kit 注册表
 
+注册表：https://www.prompt-kit.com/c/registry.json
+
 [prompt-kit](https://www.prompt-kit.com/) 是专为 AI 聊天界面设计的 shadcn/ui 组件库，包含 23 个组件：
 
 **UI 组件（21 个）：**
