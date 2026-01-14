@@ -120,16 +120,26 @@ shadcn/ui 配置文件。
 
 ```json
 {
+  "$schema": "https://ui.shadcn.com/schema.json",
   "style": "default",
+  "rsc": false,
+  "tsx": true,
   "tailwind": {
     "config": "tailwind.config.js",
     "css": "src/index.css",
-    "baseColor": "slate"
+    "baseColor": "slate",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "registries": {
+    "@prompt-kit": "https://www.prompt-kit.com/c/{name}.json"
   },
   "aliases": {
     "components": "@/components",
     "utils": "@/lib/utils",
-    "ui": "@/components/ui"
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
   }
 }
 ```
@@ -139,6 +149,58 @@ shadcn/ui 配置文件。
 - 指定 Tailwind 配置路径
 - 定义路径别名
 - shadcn/ui CLI 使用此配置
+- `rsc: false` - 不使用 React Server Components（Vite 项目）
+- `registries` - 配置第三方组件注册表
+
+### prompt-kit 注册表
+
+[prompt-kit](https://www.prompt-kit.com/) 是专为 AI 聊天界面设计的 shadcn/ui 组件库，包含 23 个组件：
+
+**UI 组件（21 个）：**
+
+| 组件                | 说明                 |
+| ------------------- | -------------------- |
+| `prompt-input`      | 聊天输入框           |
+| `code-block`        | 代码块（语法高亮）   |
+| `markdown`          | Markdown 渲染        |
+| `message`           | 聊天消息             |
+| `chat-container`    | 聊天容器（自动滚动） |
+| `scroll-button`     | 滚动到底部按钮       |
+| `loader`            | 加载指示器           |
+| `prompt-suggestion` | 提示建议             |
+| `response-stream`   | 流式文本输出         |
+| `reasoning`         | AI 推理展示          |
+| `file-upload`       | 文件上传             |
+| `jsx-preview`       | JSX 预览             |
+| `tool`              | 工具调用展示         |
+| `source`            | 引用来源展示         |
+| `image`             | 图片展示             |
+| `steps`             | 步骤序列             |
+| `system-message`    | 系统消息             |
+| `chain-of-thought`  | 思维链展示           |
+| `text-shimmer`      | 文字闪烁效果         |
+| `thinking-bar`      | AI 思考状态          |
+| `feedback-bar`      | 用户反馈             |
+
+**完整示例（2 个）：**
+
+| 组件           | 说明                        |
+| -------------- | --------------------------- |
+| `chatbot`      | 完整聊天机器人（AI SDK V5） |
+| `tool-calling` | 带工具调用的聊天机器人      |
+
+**安装命令：**
+
+```bash
+# 安装单个组件
+pnpm dlx shadcn@latest add @prompt-kit/message
+
+# 安装多个组件
+pnpm dlx shadcn@latest add @prompt-kit/chat-container @prompt-kit/message @prompt-kit/prompt-input
+
+# 查看所有可用组件
+pnpm dlx shadcn@latest search @prompt-kit
+```
 
 ---
 

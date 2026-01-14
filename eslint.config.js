@@ -235,6 +235,8 @@ export default defineConfig(
       'n/no-extraneous-import': 'off',
       'n/no-extraneous-require': 'off',
       'n/prefer-node-protocol': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/refs': 'off',
       // React 组件不需要显式的返回类型
       '@typescript-eslint/explicit-module-boundary-types': 'off',
     },

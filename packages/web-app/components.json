@@ -11,7 +11,7 @@
     "prefix": ""
   },
   "registries": {
-    "@prompt-kit": "https://prompt-kit.com/c/{name}.json"
+    "@prompt-kit": "https://www.prompt-kit.com/c/{name}.json"
   },
   "aliases": {
     "components": "@/components",

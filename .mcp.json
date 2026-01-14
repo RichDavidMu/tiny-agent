@@ -1,8 +1,9 @@
 {
   "mcpServers": {
     "shadcn": {
-      "command": "pnpm dlx",
-      "args": ["shadcn@latest", "mcp"]
+      "command": "pnpm",
+      "args": ["dlx", "shadcn@latest", "mcp"],
+      "cwd": "packages/web-app"
     }
   }
 }
