@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Bot, Globe, Lock, Zap } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 function Home() {
   return (
@@ -16,12 +17,9 @@ function Home() {
           Experience the power of large language models running entirely in your browser. No server
           required, complete privacy, lightning fast responses.
         </p>
-        <Link
-          to="/chat"
-          className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-        >
-          Start Chatting
-        </Link>
+        <Button asChild size="lg">
+          <Link to="/chat">Start Chatting</Link>
+        </Button>
       </section>
 
       {/* Features Section */}
@@ -30,8 +28,8 @@ function Home() {
           Key Features
         </h2>
         <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-2 md:gap-8">
-          <div className="group relative overflow-hidden rounded-lg border bg-card p-6 transition-all hover:shadow-md">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+          <div className="group relative overflow-hidden rounded-xl border bg-card p-6 transition-all hover:shadow-md">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
               <Lock className="h-6 w-6 text-primary" />
             </div>
             <h3 className="mb-2 text-xl font-bold">100% Private</h3>
@@ -40,8 +38,8 @@ function Home() {
             </p>
           </div>
 
-          <div className="group relative overflow-hidden rounded-lg border bg-card p-6 transition-all hover:shadow-md">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+          <div className="group relative overflow-hidden rounded-xl border bg-card p-6 transition-all hover:shadow-md">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
               <Zap className="h-6 w-6 text-primary" />
             </div>
             <h3 className="mb-2 text-xl font-bold">Lightning Fast</h3>
@@ -50,8 +48,8 @@ function Home() {
             </p>
           </div>
 
-          <div className="group relative overflow-hidden rounded-lg border bg-card p-6 transition-all hover:shadow-md">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+          <div className="group relative overflow-hidden rounded-xl border bg-card p-6 transition-all hover:shadow-md">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
               <Globe className="h-6 w-6 text-primary" />
             </div>
             <h3 className="mb-2 text-xl font-bold">No Server Needed</h3>
@@ -60,8 +58,8 @@ function Home() {
             </p>
           </div>
 
-          <div className="group relative overflow-hidden rounded-lg border bg-card p-6 transition-all hover:shadow-md">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+          <div className="group relative overflow-hidden rounded-xl border bg-card p-6 transition-all hover:shadow-md">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
               <Bot className="h-6 w-6 text-primary" />
             </div>
             <h3 className="mb-2 text-xl font-bold">Powerful Models</h3>
@@ -116,24 +114,24 @@ function Home() {
           Built With
         </h2>
         <div className="mx-auto grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="rounded-lg border bg-card p-4 transition-all hover:shadow-md">
+          <div className="rounded-xl border bg-card p-4 transition-all hover:shadow-md">
             <div className="font-bold text-primary">WebLLM</div>
             <div className="text-sm text-muted-foreground">
               High-performance in-browser LLM inference
             </div>
           </div>
 
-          <div className="rounded-lg border bg-card p-4 transition-all hover:shadow-md">
+          <div className="rounded-xl border bg-card p-4 transition-all hover:shadow-md">
             <div className="font-bold text-primary">React 19</div>
             <div className="text-sm text-muted-foreground">Modern UI framework</div>
           </div>
 
-          <div className="rounded-lg border bg-card p-4 transition-all hover:shadow-md">
+          <div className="rounded-xl border bg-card p-4 transition-all hover:shadow-md">
             <div className="font-bold text-primary">Vite</div>
             <div className="text-sm text-muted-foreground">Next-generation frontend tooling</div>
           </div>
 
-          <div className="rounded-lg border bg-card p-4 transition-all hover:shadow-md">
+          <div className="rounded-xl border bg-card p-4 transition-all hover:shadow-md">
             <div className="font-bold text-primary">TypeScript</div>
             <div className="text-sm text-muted-foreground">Type-safe development</div>
           </div>

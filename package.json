@@ -40,6 +40,7 @@
   "simple-git-hooks": {
     "pre-commit": "pnpm exec lint-staged --concurrent false"
   },
+  "packageManager": "pnpm@10.26.2",
   "lint-staged": {
     "*": [
       "prettier --write --cache --ignore-unknown"
