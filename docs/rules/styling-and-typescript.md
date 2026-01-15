@@ -8,7 +8,7 @@
 
 ## 样式规范
 
-### 1. 唯一样式方案：Tailwind CSS
+### 1. 唯一样式方案：Tailwind CSS v4
 
 **严格禁止使用其他样式方案**
 
@@ -28,6 +28,32 @@
 <div style={{ display: 'flex', padding: '16px' }}>
   <h1 style={{ fontSize: '24px' }}>Title</h1>
 </div>
+```
+
+### Tailwind CSS v4 重要变化
+
+**不再使用 `container` 类**
+
+Tailwind v4 不再推荐使用 `container` 类，改用原生工具类组合：
+
+```typescript
+// ✅ v4 推荐写法
+<div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
+
+// ❌ v3 旧写法（不推荐）
+<div className="container">
+```
+
+**变换和滤镜类直接使用**
+
+v4 中不再需要 `transform` 和 `filter` 前缀类：
+
+```typescript
+// ✅ v4 写法
+<div className="rotate-180 scale-95 blur-sm">
+
+// ❌ v3 旧写法（`transform` 和 `filter` 前缀可省略）
+<div className="transform rotate-180 scale-95 filter blur-sm">
 ```
 
 ### 2. 遵循 shadcn/ui 设计规范
@@ -68,7 +94,7 @@ import { cn } from '@/lib/utils';
 
 ### 4. 主题变量
 
-**使用 CSS 变量定义的主题色**
+**使用 CSS 变量定义的主题色（oklch 格式）**
 
 ```css
 /* 可用的主题变量 */
@@ -91,7 +117,18 @@ import { cn } from '@/lib/utils';
 --card-foreground
 --popover
 --popover-foreground
+--chart-1 ~ --chart-5
+--sidebar
+--sidebar-foreground
+--sidebar-primary
+--sidebar-primary-foreground
+--sidebar-accent
+--sidebar-accent-foreground
+--sidebar-border
+--sidebar-ring
 ```
+
+> **注意：** 颜色使用 oklch 格式定义，通过 `@theme inline` 映射到 Tailwind 颜色类。
 
 ```typescript
 // 在 Tailwind 中使用

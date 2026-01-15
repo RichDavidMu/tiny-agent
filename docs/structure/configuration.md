@@ -13,11 +13,13 @@
 ```typescript
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { defineConfig } from 'vite';
+import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [
+    tailwindcss(),
     react({
       babel: {
         plugins: [['babel-plugin-react-compiler']],
@@ -34,45 +36,60 @@ export default defineConfig({
 
 **关键配置：**
 
+- **@tailwindcss/vite** - Tailwind CSS v4 的 Vite 插件
 - React Compiler 插件（性能优化）
 - 路径别名 `@` → `./src`
 - 使用 `fileURLToPath` 替代 `__dirname`（ESM 兼容）
 
-### `tailwind.config.js`
+### Tailwind CSS v4 配置
 
-```javascript
-export default {
-  darkMode: ['class'],
-  content: ['./index.html', './src/**/*.{ts,tsx,js,jsx}'],
-  theme: {
-    container: {
-      center: true,
-      padding: '2rem',
-      screens: {
-        '2xl': '1400px',
-      },
-    },
-    extend: {
-      colors: {
-        border: 'hsl(var(--border))',
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
-        primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))',
-        },
-        // 更多 shadcn/ui 颜色配置...
-      },
-    },
-  },
-};
+Tailwind CSS v4 采用 **CSS-first 配置**，不再需要 `tailwind.config.js` 文件。所有配置都在 `src/index.css` 中完成：
+
+```css
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  /* 更多 CSS 变量... */
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  /* 暗色主题变量... */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  /* 将 CSS 变量映射到 Tailwind 颜色... */
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
 ```
 
 **关键配置：**
 
-- 暗黑模式：基于 class
-- 扫描路径：包含 index.html 和 src 目录
-- shadcn/ui 主题色系统
+- **@import "tailwindcss"** - 导入 Tailwind CSS v4
+- **@import "tw-animate-css"** - 动画库（替代 tailwindcss-animate）
+- **@custom-variant dark** - 定义暗色模式变体
+- **@theme inline** - 内联主题配置，将 CSS 变量映射到 Tailwind
+- **oklch 颜色格式** - 使用 oklch() 定义颜色（更好的色彩感知均匀性）
 
 ### `tsconfig.app.json`
 
@@ -98,22 +115,6 @@ export default {
 - 严格模式：启用
 - 目标：ES2022
 
-### `postcss.config.js`
-
-```javascript
-export default {
-  plugins: {
-    tailwindcss: {},
-    autoprefixer: {},
-  },
-};
-```
-
-**说明：**
-
-- Tailwind CSS 处理
-- Autoprefixer 自动添加浏览器前缀
-
 ### `components.json`
 
 shadcn/ui 配置文件。
@@ -127,10 +128,11 @@ shadcn/ui 配置文件。
   "tailwind": {
     "config": "tailwind.config.js",
     "css": "src/index.css",
-    "baseColor": "slate",
+    "baseColor": "neutral",
     "cssVariables": true,
-    "prefix": ""
+    "prefix": "omw"
   },
+  "iconLibrary": "lucide",
   "registries": {
     "@prompt-kit": "https://www.prompt-kit.com/c/{name}.json"
   },
@@ -146,11 +148,14 @@ shadcn/ui 配置文件。
 
 **说明：**
 
-- 指定 Tailwind 配置路径
-- 定义路径别名
-- shadcn/ui CLI 使用此配置
 - `rsc: false` - 不使用 React Server Components（Vite 项目）
-- `registries` - 配置第三方组件注册表
+- `baseColor: "neutral"` - 使用 neutral 作为基础灰色
+- `prefix: "omw"` - CSS 变量前缀（可选）
+- `iconLibrary: "lucide"` - 指定图标库
+- `registries` - 配置第三方组件注册表（prompt-kit）
+- 定义路径别名供 shadcn CLI 使用
+
+> **注意：** Tailwind CSS v4 不再需要 `postcss.config.js` 文件，PostCSS 处理由 `@tailwindcss/vite` 插件内置完成。
 
 ### prompt-kit 注册表
 
@@ -239,14 +244,14 @@ pnpm dlx shadcn@latest search @prompt-kit
 
 ```json
 {
+  "@tailwindcss/vite": "^4.1.18", // Tailwind CSS v4 Vite 插件
   "@types/node": "^24.10.1",
   "@types/react": "^19.2.5",
   "@types/react-dom": "^19.2.3",
   "@vitejs/plugin-react": "^5.1.1", // Vite React 插件
-  "autoprefixer": "^10.4.23", // PostCSS 插件
   "babel-plugin-react-compiler": "^1.0.0", // React 编译器
-  "postcss": "^8.5.6", // CSS 处理工具
-  "tailwindcss": "^3.4.19", // Tailwind CSS v3
+  "tailwindcss": "^4.1.18", // Tailwind CSS v4
+  "tw-animate-css": "^1.3.0", // Tailwind v4 动画库
   "typescript": "~5.9.3", // TypeScript
   "vite": "^7.2.4" // Vite 构建工具
 }
@@ -254,12 +259,14 @@ pnpm dlx shadcn@latest search @prompt-kit
 
 **依赖说明：**
 
+- **@tailwindcss/vite**: Tailwind CSS v4 的 Vite 集成插件
 - **@vitejs/plugin-react**: 支持 React Fast Refresh 和 JSX
-- **autoprefixer**: 自动添加 CSS 浏览器前缀
 - **babel-plugin-react-compiler**: React 19 编译器（自动优化性能）
-- **postcss**: CSS 预处理工具
-- **tailwindcss v3**: 必须使用 v3（v4 与 shadcn/ui 不兼容）
+- **tailwindcss v4**: CSS-first 配置，性能更优
+- **tw-animate-css**: Tailwind v4 兼容的动画库（替代 tailwindcss-animate）
 - **vite**: 快速开发构建工具
+
+> **注意：** Tailwind CSS v4 不再需要 `autoprefixer` 和 `postcss`，这些功能已内置于 `@tailwindcss/vite` 插件中。
 
 ---
 
@@ -267,7 +274,7 @@ pnpm dlx shadcn@latest search @prompt-kit
 
 ### 重要版本约束
 
-- **Tailwind CSS**: 必须使用 v3.x（不支持 v4.x）
+- **Tailwind CSS**: v4.x（使用 CSS-first 配置）
 - **React**: v19.x
 - **TypeScript**: v5.9.x
 - **Node.js**: >= 24.1.0

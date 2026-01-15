@@ -22,8 +22,10 @@
 
 ### UI 和样式
 
-- **Tailwind CSS 3** - 样式框架（**唯一样式解决方案**）
+- **Tailwind CSS 4** - 样式框架（**唯一样式解决方案**，CSS-first 配置）
+- **tw-animate-css** - Tailwind v4 动画库
 - **shadcn/ui** - UI 组件库风格指导
+- **prompt-kit** - AI 聊天界面组件库
 - **lucide-react** - 图标库
 - **clsx + tailwind-merge** - 类名合并工具
 
@@ -120,6 +122,16 @@ const Component = observer(() => {
 ---
 
 ## 更新日志
+
+### 2026-01-15
+
+- ✅ 升级 Tailwind CSS 从 v3 到 v4（CSS-first 配置）
+- ✅ 移除 `tailwind.config.js` 和 `postcss.config.js`
+- ✅ 添加 `@tailwindcss/vite` 插件
+- ✅ 添加 `tw-animate-css` 动画库
+- ✅ 更新 shadcn/ui 配置（baseColor: neutral, prefix: omw）
+- ✅ 添加 prompt-kit 组件库支持
+- ✅ 使用 oklch 颜色格式
 
 ### 2026-01-13
 
