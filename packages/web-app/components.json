@@ -8,7 +8,7 @@
     "css": "src/index.css",
     "baseColor": "neutral",
     "cssVariables": true,
-    "prefix": "omw"
+    "prefix": ""
   },
   "iconLibrary": "lucide",
   "registries": {
