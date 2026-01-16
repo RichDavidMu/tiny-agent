@@ -5,9 +5,9 @@ import { Toaster } from '@/components/ui/sonner';
 const Layout = observer(() => {
   return (
     <div className="flex min-h-screen flex-col">
+      <Toaster />
       <main className="flex-1">
         <Outlet />
-        <Toaster />
       </main>
     </div>
   );

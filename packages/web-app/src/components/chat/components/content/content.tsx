@@ -1,17 +1,10 @@
 import { observer } from 'mobx-react-lite';
-import { Send } from 'lucide-react';
 import { Message, MessageAvatar, MessageContent } from '@/components/ui/message.tsx';
 import { cn } from '@/lib/utils.ts';
 import { Loader } from '@/components/ui/loader.tsx';
-import {
-  PromptInput,
-  PromptInputAction,
-  PromptInputActions,
-  PromptInputTextarea,
-} from '@/components/ui/prompt-input.tsx';
-import { Button } from '@/components/ui/button.tsx';
 import rootStore from '@/stores/rootStore.ts';
 import { useSidebar } from '@/components/ui/sidebar.tsx';
+import Footer from '@/components/chat/components/content/components/footer/footer.tsx';
 
 const Content = observer(() => {
   const { inputStore } = rootStore;
@@ -59,33 +52,7 @@ const Content = observer(() => {
               </Message>
             )}
           </div>
-
-          {/* Input Area */}
-          <PromptInput
-            value={inputStore.input}
-            onValueChange={(value) => inputStore.setInput(value)}
-            onSubmit={() => inputStore.handleSend()}
-            disabled={inputStore.loading}
-            className="mt-4"
-          >
-            <PromptInputTextarea placeholder="Type your message here..." />
-            <PromptInputActions className="justify-end px-2 pb-2">
-              <PromptInputAction tooltip="Send message">
-                <Button
-                  size="icon"
-                  disabled={!inputStore.input.trim() || inputStore.loading}
-                  onClick={() => inputStore.handleSend()}
-                  className="h-9 w-9 rounded-full"
-                >
-                  {inputStore.loading ? (
-                    <Loader variant="circular" size="sm" className="border-primary-foreground" />
-                  ) : (
-                    <Send className="h-4 w-4" />
-                  )}
-                </Button>
-              </PromptInputAction>
-            </PromptInputActions>
-          </PromptInput>
+          <Footer />
         </>
       </div>
     </div>

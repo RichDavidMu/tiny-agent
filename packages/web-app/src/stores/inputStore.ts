@@ -2,7 +2,6 @@ import { makeAutoObservable } from 'mobx';
 import { toast } from 'sonner';
 import type { ChatCompletion } from '@mlc-ai/web-llm/lib/openai_api_protocols/chat_completion';
 import llm from '@/agentCore/llm.ts';
-
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
