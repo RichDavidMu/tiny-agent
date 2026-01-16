@@ -5,6 +5,7 @@ import { Loader } from '@/components/ui/loader.tsx';
 import rootStore from '@/stores/rootStore.ts';
 import { useSidebar } from '@/components/ui/sidebar.tsx';
 import Footer from '@/components/chat/components/content/components/footer/footer.tsx';
+// import llm from '@/agentCore/llm.ts';
 
 const Content = observer(() => {
   const { inputStore } = rootStore;
@@ -19,7 +20,7 @@ const Content = observer(() => {
           <div className="flex-1 space-y-4 overflow-y-auto rounded-xl p-4">
             {inputStore.messages.length === 0 && (
               <div className="flex h-full items-center justify-center text-muted-foreground">
-                Start a conversation with the AI!
+                {/*{llm.ready ? 'Start a conversation with the AI!' : llm.progressText}*/}
               </div>
             )}
             {inputStore.messages.map((message, index) => (

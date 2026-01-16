@@ -9,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button.tsx';
 import { Loader } from '@/components/ui/loader.tsx';
 import rootStore from '@/stores/rootStore.ts';
-import llm from '@/agentCore/llm.ts';
+// import llm from '@/agentCore/llm.ts';
 
 const Footer = observer(() => {
   const { inputStore } = rootStore;
@@ -24,12 +24,13 @@ const Footer = observer(() => {
       <PromptInputTextarea placeholder="Type your message here..." />
       <PromptInputActions className="justify-end px-2 pb-2">
         <PromptInputAction
-          tooltip={llm.client ? 'Send Message' : `Loading Model: \n${llm.progressText}`}
+          tooltip={'send message'}
+          // tooltip={llm.ready ? 'Send Message' : `Loading Model: \n${llm.progressText}`}
           className="max-w-sm"
         >
           <Button
             size="icon"
-            disabled={!inputStore.input.trim() || inputStore.loading}
+            // disabled={!inputStore.input.trim() || inputStore.loading || !llm.ready}
             onClick={() => inputStore.handleSend()}
             className="h-9 w-9 rounded-full"
           >
