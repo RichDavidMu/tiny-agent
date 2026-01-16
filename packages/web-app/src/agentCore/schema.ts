@@ -1,12 +1,3 @@
-export const Role = {
-  SYSTEM: 'system',
-  USER: 'user',
-  ASSISTANT: 'assistant',
-  TOOL: 'tool',
-} as const;
-export const ROLE_VALUES = Array.from(Object.values(Role));
-export type ROLE_TYPE = (typeof Role)[keyof typeof Role];
-
 export const ToolChoice = {
   NONE: 'none',
   AUTO: 'auto',

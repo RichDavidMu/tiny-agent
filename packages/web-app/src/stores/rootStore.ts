@@ -1,11 +1,14 @@
 import { createContext, useContext } from 'react';
+import { InputStore } from '@/stores/inputStore.ts';
 import { ThemeStore } from './themeStore';
 
 export class RootStore {
   themeStore: ThemeStore;
+  inputStore: InputStore;
 
   constructor() {
     this.themeStore = new ThemeStore();
+    this.inputStore = new InputStore();
   }
 }
 
