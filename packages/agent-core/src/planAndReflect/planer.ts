@@ -8,7 +8,7 @@ import { WebFetcher } from '../tools/webFetch.ts';
 import { WebSearcher } from '../tools/webSearch.ts';
 import { PlanPrompt, SystemPrompt } from './prompt.ts';
 
-export class PlanAndReflect {
+export class PlanAndRethink {
   step: number = 0;
   llm: LLM = planLLM;
 

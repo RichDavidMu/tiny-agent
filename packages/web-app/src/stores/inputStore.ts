@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 // import { toast } from 'sonner';
 // import type { ChatCompletion } from '@mlc-ai/web-llm/lib/openai_api_protocols/chat_completion';
-import { PlanAndReflect } from 'agent-core';
+import { Agent } from 'agent-core';
 import { createTask } from '@/lib/async.ts';
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -11,7 +11,7 @@ interface ChatMessage {
 export class InputStore {
   input: string = '';
   messages: ChatMessage[] = [];
-  planer = new PlanAndReflect();
+  agent = new Agent();
   constructor() {
     makeAutoObservable(this);
   }
@@ -26,13 +26,13 @@ export class InputStore {
     if (!this.input.trim() || this.loading) return;
     const [ready, resolve] = createTask<boolean>();
     const timer = setInterval(() => {
-      if (this.planer.llm.ready) {
+      if (this.agent.llm.ready) {
         resolve(true);
         clearInterval(timer);
       }
     }, 1000);
     await ready;
-    const plan = await this.planer.plan(this.input);
+    const plan = await this.agent.planer.plan(this.input);
     // if (!llm.client) {
     //   toast.error('Loading model...');
     //   return;
