@@ -6,29 +6,52 @@ import { JavascriptExecutor } from '../tools/javascriptExecutor.ts';
 import { type LLM, planLLM } from '../llm/llm.ts';
 import { WebFetcher } from '../tools/webFetch.ts';
 import { WebSearcher } from '../tools/webSearch.ts';
+import type { MCPClient, MCPToolCall } from '../mcp';
+import { createMCPToolCalls } from '../mcp';
+import type { ToolCall } from '../tools/toolCall.ts';
+import type { PlanSchema } from '../types/planer.ts';
 import { PlanPrompt, SystemPrompt } from './prompt.ts';
 
 export class PlanAndRethink {
   step: number = 0;
   llm: LLM = planLLM;
 
-  tools = [new LLMGenerator(), new JavascriptExecutor(), new WebFetcher(), new WebSearcher()];
+  // 内置工具
+  private builtinTools: ToolCall[] = [
+    new LLMGenerator(),
+    new JavascriptExecutor(),
+    new WebFetcher(),
+    new WebSearcher(),
+  ];
 
-  plans: {
-    tasks: {
-      task_id: string;
-      task_goal: string;
-      steps: [
-        {
-          step_id: string;
-          step_goal: string;
-          tool_name: string;
-          tool_intent: string;
-          expected_output: string;
-        },
-      ];
-    }[];
-  } | null = null;
+  // MCP 工具
+  private mcpTools: MCPToolCall[] = [];
+
+  // 所有工具（内置 + MCP）
+  get tools(): ToolCall[] {
+    return [...this.builtinTools, ...this.mcpTools];
+  }
+
+  // 添加 MCP 服务器的工具
+  async addMCPTools(mcpClient: MCPClient): Promise<void> {
+    if (!mcpClient.isConnected) {
+      await mcpClient.connect();
+    }
+    const newTools = createMCPToolCalls(mcpClient);
+    this.mcpTools.push(...newTools);
+  }
+
+  // 移除指定 MCP 客户端的工具
+  removeMCPTools(mcpClient: MCPClient): void {
+    this.mcpTools = this.mcpTools.filter((t) => t.tool.name !== mcpClient.serverName);
+  }
+
+  // 清除所有 MCP 工具
+  clearMCPTools(): void {
+    this.mcpTools = [];
+  }
+
+  plans: PlanSchema | null = null;
 
   async plan(input: string) {
     const availableTools = this.tools

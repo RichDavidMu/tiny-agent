@@ -1,5 +1,5 @@
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type { ToolCallResponse } from '../types/llm.ts';
-import type { ToolResponse } from '../types/tool.ts';
 import ToolBase from './toolBase.ts';
 import { ToolCall } from './toolCall.ts';
 
@@ -34,34 +34,25 @@ export class WebSearcher extends ToolCall {
     provider: 'duckduckgo',
   };
 
-  async executeTool(toolCall: ToolCallResponse, _tool: ToolBase): Promise<ToolResponse> {
+  async executeTool(toolCall: ToolCallResponse, _tool: ToolBase): Promise<CallToolResult> {
     const args = toolCall.function.arguments;
     try {
       if (typeof args.query !== 'string') {
         return {
-          error: {
-            type: 'invalid_argument',
-            message: 'Missing required argument: query',
-          },
+          content: [{ type: 'text', text: 'Missing required argument: query' }],
+          isError: true,
         };
       }
 
       const results = await this.search(args.query);
       return {
-        content: [
-          {
-            type: 'text',
-            text: results,
-          },
-        ],
+        content: [{ type: 'text', text: results }],
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       return {
-        error: {
-          type: 'search_error',
-          message: errorMessage,
-        },
+        content: [{ type: 'text', text: errorMessage }],
+        isError: true,
       };
     }
   }

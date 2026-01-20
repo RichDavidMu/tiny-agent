@@ -1,4 +1,4 @@
-import type { ToolResponse } from '../types/tool';
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type { ToolCallResponse } from '../types/llm.ts';
 import { ToolCall } from './toolCall.ts';
 import ToolBase from './toolBase';
@@ -22,14 +22,12 @@ class LLMGeneratorTool extends ToolBase {
 
 export class LLMGenerator extends ToolCall {
   tool = new LLMGeneratorTool();
-  async executeTool(toolCall: ToolCallResponse, _tool: ToolBase): Promise<ToolResponse> {
+  async executeTool(toolCall: ToolCallResponse, _tool: ToolBase): Promise<CallToolResult> {
     const args = toolCall.function.arguments;
     if (typeof args.task !== 'string') {
       return {
-        error: {
-          type: 'invalid_argument',
-          message: 'Missing required argument: url',
-        },
+        content: [{ type: 'text', text: 'Missing required argument: task' }],
+        isError: true,
       };
     }
     const res = await this.llm.askLLM({

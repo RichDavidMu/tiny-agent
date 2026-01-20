@@ -1,4 +1,4 @@
-import type { ToolResponse } from '../types/tool';
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type { ToolCallResponse } from '../types/llm.ts';
 import { ToolCall } from './toolCall.ts';
 import ToolBase from './toolBase';
@@ -22,16 +22,14 @@ class JSExecuteTool extends ToolBase {
 
 export class JavascriptExecutor extends ToolCall {
   tool = new JSExecuteTool();
-  async executeTool(toolCall: ToolCallResponse, _tool: ToolBase): Promise<ToolResponse> {
+  async executeTool(toolCall: ToolCallResponse, _tool: ToolBase): Promise<CallToolResult> {
     try {
       const args = toolCall.function.arguments;
 
       if (typeof args.code !== 'string') {
         return {
-          error: {
-            type: 'invalid_argument',
-            message: 'Missing required argument: code',
-          },
+          content: [{ type: 'text', text: 'Missing required argument: code' }],
+          isError: true,
         };
       }
 
@@ -50,10 +48,8 @@ export class JavascriptExecutor extends ToolCall {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       return {
-        error: {
-          type: 'execution_error',
-          message: errorMessage,
-        },
+        content: [{ type: 'text', text: errorMessage }],
+        isError: true,
       };
     }
   }

@@ -1,5 +1,5 @@
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { type LLM, toolLLM } from '../llm/llm.ts';
-import type { ToolResponse } from '../types/tool.ts';
 import type { ToolCallResponse } from '../types/llm.ts';
 import type ToolBase from './toolBase.ts';
 
@@ -30,8 +30,8 @@ export abstract class ToolCall {
     this.toolCall = toolCall;
     return true;
   }
-  private async act(toolCall: ToolCallResponse): Promise<ToolResponse> {
+  private async act(toolCall: ToolCallResponse): Promise<CallToolResult> {
     return await this.executeTool(toolCall, this.tool);
   }
-  abstract executeTool(toolCall: ToolCallResponse, tool: ToolBase): Promise<ToolResponse>;
+  abstract executeTool(toolCall: ToolCallResponse, tool: ToolBase): Promise<CallToolResult>;
 }

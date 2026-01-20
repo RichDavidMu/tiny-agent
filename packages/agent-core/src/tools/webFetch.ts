@@ -1,4 +1,4 @@
-import type { ToolResponse } from '../types/tool';
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type { ToolCallResponse } from '../types/llm.ts';
 import { ToolCall } from './toolCall.ts';
 import ToolBase from './toolBase';
@@ -23,25 +23,23 @@ class WebFetchTool extends ToolBase {
 export class WebFetcher extends ToolCall {
   tool = new WebFetchTool();
 
-  async executeTool(toolCall: ToolCallResponse, _tool: ToolBase): Promise<ToolResponse> {
+  async executeTool(toolCall: ToolCallResponse, _tool: ToolBase): Promise<CallToolResult> {
     try {
       const args = toolCall.function.arguments;
       if (typeof args.url !== 'string') {
         return {
-          error: {
-            type: 'invalid_argument',
-            message: 'Missing required argument: url',
-          },
+          content: [{ type: 'text', text: 'Missing required argument: url' }],
+          isError: true,
         };
       }
       const response = await fetch(args.url);
 
       if (!response.ok) {
         return {
-          error: {
-            type: 'fetch_error',
-            message: `HTTP error: ${response.status} ${response.statusText}`,
-          },
+          content: [
+            { type: 'text', text: `HTTP error: ${response.status} ${response.statusText}` },
+          ],
+          isError: true,
         };
       }
 
@@ -56,20 +54,13 @@ export class WebFetcher extends ToolCall {
       }
 
       return {
-        content: [
-          {
-            type: 'text',
-            text: content,
-          },
-        ],
+        content: [{ type: 'text', text: content }],
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       return {
-        error: {
-          type: 'fetch_error',
-          message: errorMessage,
-        },
+        content: [{ type: 'text', text: errorMessage }],
+        isError: true,
       };
     }
   }
