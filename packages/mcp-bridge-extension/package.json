@@ -1,0 +1,24 @@
+{
+  "name": "mcp-bridge-extension",
+  "version": "0.1.0",
+  "description": "Browser extension to bridge MCP connections and bypass CORS",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types.ts"
+  },
+  "scripts": {
+    "build": "node scripts/build.js",
+    "watch": "node scripts/build.js --watch",
+    "pack": "pnpm run build && node scripts/pack.js"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.287",
+    "typescript": "^5.8.3",
+    "esbuild": "0.25.0",
+    "archiver": "^7.0.1",
+    "@types/archiver": "^6.0.3"
+  }
+}

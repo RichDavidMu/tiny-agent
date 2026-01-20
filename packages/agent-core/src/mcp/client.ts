@@ -4,12 +4,15 @@
  */
 
 import type { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
+import type { ToolCall } from '../tools/toolCall.ts';
 import type {
   JsonRpcRequest,
   JsonRpcResponse,
   MCPClientOptions,
   MCPServerConfig,
 } from './types.ts';
+import { bridgeFetch } from './bridge.ts';
+import { MCPToolCall } from './toolWrapper.ts';
 
 export class MCPClient {
   private serverConfig: MCPServerConfig;
@@ -39,6 +42,10 @@ export class MCPClient {
     return this._tools;
   }
 
+  getToolCall(): ToolCall[] {
+    return this.tools.map((tool) => new MCPToolCall(this, tool));
+  }
+
   private nextId(): number {
     return ++this.requestId;
   }
@@ -53,13 +60,14 @@ export class MCPClient {
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      Accept: 'application/json, text/event-stream',
     };
 
     if (this.sessionId) {
       headers['Mcp-Session-Id'] = this.sessionId;
     }
 
-    const response = await fetch(this.serverConfig.url, {
+    const response = await bridgeFetch(this.serverConfig.url, {
       method: 'POST',
       headers,
       body: JSON.stringify(request),
@@ -75,7 +83,16 @@ export class MCPClient {
       throw new Error(`HTTP error: ${response.status} ${response.statusText}`);
     }
 
-    const jsonResponse: JsonRpcResponse = await response.json();
+    const contentType = response.headers.get('Content-Type') || '';
+    let jsonResponse: JsonRpcResponse;
+
+    if (contentType.includes('text/event-stream')) {
+      // 解析 SSE 流
+      jsonResponse = await this.parseSSEResponse(response);
+    } else {
+      // 直接解析 JSON
+      jsonResponse = await response.json();
+    }
 
     if (jsonResponse.error) {
       throw new Error(
@@ -84,6 +101,28 @@ export class MCPClient {
     }
 
     return jsonResponse.result as T;
+  }
+
+  /**
+   * 解析 SSE 响应，提取最终的 JSON-RPC 结果
+   */
+  private async parseSSEResponse(response: Response): Promise<JsonRpcResponse> {
+    const text = await response.text();
+    const lines = text.split('\n');
+
+    let lastData: string | null = null;
+
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        lastData = line.slice(6);
+      }
+    }
+
+    if (!lastData) {
+      throw new Error('No data in SSE response');
+    }
+
+    return JSON.parse(lastData);
   }
 
   async connect(): Promise<void> {
@@ -136,13 +175,14 @@ export class MCPClient {
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      Accept: 'application/json, text/event-stream',
     };
 
     if (this.sessionId) {
       headers['Mcp-Session-Id'] = this.sessionId;
     }
 
-    await fetch(this.serverConfig.url, {
+    await bridgeFetch(this.serverConfig.url, {
       method: 'POST',
       headers,
       body: JSON.stringify(request),
@@ -180,59 +220,5 @@ export class MCPClient {
 
   getTool(name: string): Tool | undefined {
     return this._tools.find((t) => t.name === name);
-  }
-}
-
-// MCP 客户端管理器 - 支持多个 MCP 服务器
-export class MCPClientManager {
-  private clients: Map<string, MCPClient> = new Map();
-
-  async addServer(config: MCPServerConfig, options?: MCPClientOptions): Promise<MCPClient> {
-    if (this.clients.has(config.name)) {
-      throw new Error(`MCP server ${config.name} already exists`);
-    }
-
-    const client = new MCPClient(config, options);
-    await client.connect();
-    this.clients.set(config.name, client);
-    return client;
-  }
-
-  async removeServer(name: string): Promise<void> {
-    const client = this.clients.get(name);
-    if (client) {
-      await client.disconnect();
-      this.clients.delete(name);
-    }
-  }
-
-  getClient(name: string): MCPClient | undefined {
-    return this.clients.get(name);
-  }
-
-  getAllClients(): MCPClient[] {
-    return Array.from(this.clients.values());
-  }
-
-  // 获取所有服务器的所有工具
-  getAllTools(): { serverName: string; tool: Tool }[] {
-    const allTools: { serverName: string; tool: Tool }[] = [];
-    for (const client of this.clients.values()) {
-      for (const tool of client.tools) {
-        allTools.push({
-          serverName: client.serverName,
-          tool,
-        });
-      }
-    }
-    return allTools;
-  }
-
-  async disconnectAll(): Promise<void> {
-    const disconnectPromises = Array.from(this.clients.values()).map((client) =>
-      client.disconnect(),
-    );
-    await Promise.all(disconnectPromises);
-    this.clients.clear();
   }
 }

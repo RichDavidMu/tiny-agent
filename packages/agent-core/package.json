@@ -15,7 +15,8 @@
   "license": "ISC",
   "packageManager": "pnpm@10.26.2",
   "dependencies": {
-    "@mlc-ai/web-llm": "^0.2.80"
+    "@mlc-ai/web-llm": "^0.2.80",
+    "mcp-bridge-extension": "workspace:*"
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.25.2"
