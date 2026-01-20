@@ -1,6 +1,6 @@
-import type { ChatCompletionMessageToolCall } from '@mlc-ai/web-llm';
-import { ToolCall } from '@/tools/toolCall.ts';
-import type { ToolResponse } from '@/types/tool';
+import type { ToolResponse } from '../types/tool';
+import type { ToolCallResponse } from '../types/llm.ts';
+import { ToolCall } from './toolCall.ts';
 import ToolBase from './toolBase';
 
 class JSExecuteTool extends ToolBase {
@@ -22,15 +22,11 @@ class JSExecuteTool extends ToolBase {
 
 export class JavascriptExecutor extends ToolCall {
   tool = new JSExecuteTool();
-  async executeTool(
-    toolCall: ChatCompletionMessageToolCall,
-    _tool: ToolBase,
-  ): Promise<ToolResponse> {
+  async executeTool(toolCall: ToolCallResponse, _tool: ToolBase): Promise<ToolResponse> {
     try {
-      const args = JSON.parse(toolCall.function.arguments);
-      const code = args.code as string;
+      const args = toolCall.function.arguments;
 
-      if (!code) {
+      if (typeof args.code !== 'string') {
         return {
           error: {
             type: 'invalid_argument',
@@ -40,8 +36,8 @@ export class JavascriptExecutor extends ToolCall {
       }
 
       // 使用 AsyncFunction 执行代码，支持 await
-      const fn = new Function(code);
-      const result = await fn();
+      const fn = new Function(args.code);
+      const result = Promise.resolve(fn());
 
       return {
         content: [

@@ -1,8 +1,12 @@
 import { CreateMLCEngine, type MLCEngine } from '@mlc-ai/web-llm';
-import type { ChatCompletionTool } from '@mlc-ai/web-llm/lib/openai_api_protocols/chat_completion';
+import type {
+  ChatCompletionMessageParam,
+  ChatCompletionTool,
+} from '@mlc-ai/web-llm/lib/openai_api_protocols/chat_completion';
+import type { ToolCallResponse } from '../types/llm.ts';
 import type { Memory } from './memory.ts';
 import { ValueError } from './exceptions.ts';
-// console.log(prebuiltAppConfig);
+import { SystemPrompt, userPrompt } from './prompt.ts';
 export class LLM {
   model_id: string;
   client: MLCEngine | null = null;
@@ -19,19 +23,23 @@ export class LLM {
       {
         initProgressCallback: (progress) => {
           this.progressText = progress.text;
+          console.log(this.model_id, progress.text);
         },
       },
       { context_window_size: 32768 },
     );
-    console.log('loaded');
+    await this.client.unload();
+    console.log(this.model_id, ' loaded');
     // this.tokenizer = await asyncLoadTokenizer(this.model_id);
     this.ready = true;
   }
 
-  async ask({ messages, stream = true }: { messages: Memory['messages']; stream?: boolean }) {
+  async askLLM({ messages, stream = true }: { messages: Memory['messages']; stream?: boolean }) {
     if (!this.client) {
       throw new ValueError('No available LLM client');
     }
+    await this.client.reload(this.model_id);
+    console.log(this.model_id, ' reloaded');
     if (!stream) {
       const response = await this.client.chat.completions.create({
         messages,
@@ -56,21 +64,32 @@ export class LLM {
     if (!fullResponse) {
       throw new ValueError('Empty response from streaming LLM');
     }
+    console.log(this.model_id, ' unloaded');
+    await this.client.unload();
     return fullResponse;
   }
-  async askTool({ messages, tool }: { messages: Memory['messages']; tool: ChatCompletionTool }) {
+  async toolCall({ task, tool }: { task: string; tool: ChatCompletionTool }) {
     if (!this.client) {
       throw new ValueError('No available LLM client');
     }
+    await this.client.reload(this.model_id);
+    console.log(this.model_id, ' reloaded');
+    const messages: ChatCompletionMessageParam[] = [
+      { role: 'system', content: SystemPrompt(JSON.stringify(tool, null, 2)) },
+      { role: 'user', content: userPrompt(task) },
+    ];
     const response = await this.client.chat.completions.create({
       messages,
-      tools: [tool],
-      tool_choice: { type: 'function', function: { name: tool.function.name } },
     });
-    if (!response.choices[0].message.tool_calls?.length) {
-      throw new ValueError('No tool calls found');
+    await this.client.unload();
+    console.log(this.model_id, ' unloaded', response.choices[0].message.content);
+    const content = response.choices[0].message.content;
+    if (!content || !content.includes('</think>')) {
+      throw new ValueError('Empty response from LLM');
     }
-    return response.choices[0].message.tool_calls;
+    const toolCall = content.split('</think>')[1];
+    return JSON.parse(toolCall) as ToolCallResponse;
   }
 }
-export default new LLM();
+export const planLLM = new LLM();
+export const toolLLM = planLLM;

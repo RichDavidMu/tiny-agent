@@ -1,18 +1,18 @@
-import type { ChatCompletionMessageToolCall } from '@mlc-ai/web-llm';
-import type { LLM } from '../app/llm.ts';
+import { type LLM, toolLLM } from '../llm/llm.ts';
 import type { ToolResponse } from '../types/tool.ts';
-import llm from '../app/llm.ts';
+import type { ToolCallResponse } from '../types/llm.ts';
 import type ToolBase from './toolBase.ts';
 
 export abstract class ToolCall {
   abstract tool: ToolBase;
 
-  llm: LLM = llm;
+  llm: LLM = toolLLM;
 
-  toolCall: ChatCompletionMessageToolCall | null = null;
+  toolCall: ToolCallResponse | null = null;
 
   async step(task: string) {
     const shouldAct = await this.think(task);
+    console.log('shouldAct\n', shouldAct, '\n', 'toolCall:\n', this.toolCall);
     if (shouldAct) {
       return await this.act(this.toolCall!);
     }
@@ -20,21 +20,18 @@ export abstract class ToolCall {
   }
 
   private async think(task: string): Promise<boolean> {
-    const toolCalls = await this.llm.askTool({
-      messages: [{ role: 'user', content: task }],
+    const toolCall = await this.llm.toolCall({
+      task,
       tool: this.tool.toParams(),
     });
-    if (toolCalls.length === 0) {
+    if (!toolCall) {
       return false;
     }
-    this.toolCall = toolCalls[0];
+    this.toolCall = toolCall;
     return true;
   }
-  private async act(toolCall: ChatCompletionMessageToolCall): Promise<ToolResponse> {
+  private async act(toolCall: ToolCallResponse): Promise<ToolResponse> {
     return await this.executeTool(toolCall, this.tool);
   }
-  abstract executeTool(
-    toolCall: ChatCompletionMessageToolCall,
-    tool: ToolBase,
-  ): Promise<ToolResponse>;
+  abstract executeTool(toolCall: ToolCallResponse, tool: ToolBase): Promise<ToolResponse>;
 }

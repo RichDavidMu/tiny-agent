@@ -1,6 +1,6 @@
-import type { ChatCompletionMessageToolCall } from '@mlc-ai/web-llm';
-import { ToolCall } from '@/tools/toolCall.ts';
-import type { ToolResponse } from '@/types/tool';
+import type { ToolResponse } from '../types/tool';
+import type { ToolCallResponse } from '../types/llm.ts';
+import { ToolCall } from './toolCall.ts';
 import ToolBase from './toolBase';
 
 class LLMGeneratorTool extends ToolBase {
@@ -22,13 +22,18 @@ class LLMGeneratorTool extends ToolBase {
 
 export class LLMGenerator extends ToolCall {
   tool = new LLMGeneratorTool();
-  async executeTool(
-    toolCall: ChatCompletionMessageToolCall,
-    _tool: ToolBase,
-  ): Promise<ToolResponse> {
-    const params = JSON.parse(toolCall.function.arguments);
-    const res = await this.llm.ask({
-      messages: [{ role: 'user', content: params.task }],
+  async executeTool(toolCall: ToolCallResponse, _tool: ToolBase): Promise<ToolResponse> {
+    const args = toolCall.function.arguments;
+    if (typeof args.task !== 'string') {
+      return {
+        error: {
+          type: 'invalid_argument',
+          message: 'Missing required argument: url',
+        },
+      };
+    }
+    const res = await this.llm.askLLM({
+      messages: [{ role: 'user', content: args.task }],
       stream: true,
     });
     return {

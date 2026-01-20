@@ -14,11 +14,11 @@
     "moduleDetection": "force",
     "noEmit": true,
 
-    /* Path Aliases */
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    },
+    //    /* Path Aliases */
+    //    "baseUrl": ".",
+    //    "paths": {
+    //      "@/*": ["./src/*"]
+    //    },
 
     /* Linting */
     "strict": true,
