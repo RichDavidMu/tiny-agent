@@ -67,6 +67,9 @@ importers:
       mcp-bridge-extension:
         specifier: workspace:*
         version: link:../mcp-bridge-extension
+      uuid:
+        specifier: ^11.1.0
+        version: 11.1.0
     devDependencies:
       '@modelcontextprotocol/sdk':
         specifier: ^1.25.2
@@ -6679,6 +6682,13 @@ packages:
         integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==,
       }
 
+  uuid@11.1.0:
+    resolution:
+      {
+        integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==,
+      }
+    hasBin: true
+
   validate-npm-package-name@7.0.2:
     resolution:
       {
@@ -10990,6 +11000,8 @@ snapshots:
       react: 19.2.3
 
   util-deprecate@1.0.2: {}
+
+  uuid@11.1.0: {}
 
   validate-npm-package-name@7.0.2: {}
 
