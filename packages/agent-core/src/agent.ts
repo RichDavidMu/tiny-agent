@@ -1,4 +1,4 @@
-import { PlanAndRethink } from './planAndReflect/planer.ts';
+import { PlanAndRethink } from './planAndRethink/planer.ts';
 import { planLLM } from './llm/llm.ts';
 import { MCPClientHost } from './mcp';
 
@@ -15,9 +15,8 @@ export class Agent {
 
   async initMcp() {
     try {
-      await this.mcpHost.addServer({ name: 'david blog', url: 'https://luoluoqinghuan.cn/mcp' });
+      await this.mcpHost.addServer({ name: 'ddgs-search', url: 'https://renbaicai.site/ddgs/mcp' });
       const tools = this.mcpHost.getToolCalls();
-      console.log('mcp server added', tools);
       this.planer.setMCPTools(tools);
     } catch (e) {
       console.log(e);

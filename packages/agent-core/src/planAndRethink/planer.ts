@@ -3,9 +3,7 @@
  */
 import { LLMGenerator } from '../tools/llmGenerator.ts';
 import { JavascriptExecutor } from '../tools/javascriptExecutor.ts';
-import { type LLM, planLLM } from '../llm/llm.ts';
-import { WebFetcher } from '../tools/webFetch.ts';
-import { WebSearcher } from '../tools/webSearch.ts';
+import { type LLM, planLLM, toolLLM } from '../llm/llm.ts';
 import type { ToolCall } from '../tools/toolCall.ts';
 import type { PlanSchema } from '../types/planer.ts';
 import { PlanPrompt, SystemPrompt } from './prompt.ts';
@@ -15,12 +13,7 @@ export class PlanAndRethink {
   llm: LLM = planLLM;
 
   // 内置工具
-  private builtinTools: ToolCall[] = [
-    new LLMGenerator(),
-    new JavascriptExecutor(),
-    new WebFetcher(),
-    new WebSearcher(),
-  ];
+  private builtinTools: ToolCall[] = [new LLMGenerator(), new JavascriptExecutor()];
 
   // MCP 工具
   private mcpTools: ToolCall[] = [];
@@ -30,13 +23,13 @@ export class PlanAndRethink {
     return [...this.builtinTools, ...this.mcpTools];
   }
 
-  setMCPTools(tools: ToolCall[]) {
+  setMCPTools(tools: ToolCall[]): void {
     this.mcpTools = tools;
   }
 
   plans: PlanSchema | null = null;
 
-  async plan(input: string) {
+  async plan(input: string): Promise<string> {
     const availableTools = this.tools
       .map((t) => `- ${t.tool.name}: ${t.tool.description}`)
       .join('\n');
@@ -60,9 +53,11 @@ export class PlanAndRethink {
     }
     console.log(this.plans);
     for (const step of this.plans.tasks[0].steps) {
+      await toolLLM.reload();
       const tool = this.tools.find((t) => t.tool.name === step.tool_name)!;
       const result = await tool.step(step.step_goal);
       console.log('工具调用结果\n', result);
+      await toolLLM.unload();
     }
     return res;
   }

@@ -1,4 +1,4 @@
-export const SystemPrompt = (tool: string) => `
+export const ToolCallSystemPrompt = (tool: string) => `
 你是一个“工具调用决策器”，你的唯一职责是：
 在【是否需要调用工具】与【直接回复用户】之间做出判断，
 并用【严格 JSON】格式输出结果。
@@ -50,7 +50,7 @@ ${tool}
 - 不要为了“展示能力”而调用工具
 `;
 
-export const userPrompt = (input: string) => `
+export const ToolCallUserPrompt = (input: string) => `
 用户问题：
 ${input}
 `;
