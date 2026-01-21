@@ -32,7 +32,14 @@
 ### AI 功能
 
 - **@mlc-ai/web-llm** - 浏览器内 LLM 推理
-- **Qwen2.5-0.5B-Instruct** - 默认使用的模型（~400MB）
+- **Qwen3-4B-q4f16_1-MLC** - 默认使用的模型
+
+### Agent 核心
+
+- **PlanAndRethink** - 规划与反思引擎
+- **ToolBase / ToolCall** - 工具调用框架
+- **MCP (Model Context Protocol)** - 外部工具协议
+- **MCPClient / MCPClientHost** - MCP 客户端实现
 
 ---
 
@@ -63,6 +70,13 @@
 - 工具配置说明
 - 最佳实践和禁止事项
 
+### 🤖 [Agent 开发规范](./agent-development.md)
+
+- Agent 核心架构规范
+- 工具开发规范
+- MCP 集成规范
+- UI 层数据协议
+
 ---
 
 ## 快速参考
@@ -75,6 +89,8 @@
 - home.tsx
 - themeStore.ts
 - rootStore.ts
+- toolCall.ts
+- planAndRethink.ts
 ```
 
 ### 导入顺序
@@ -107,6 +123,21 @@ const Component = observer(() => {
 <div className={styles.xxx} />  // 禁止
 ```
 
+### Agent 工具开发
+
+```typescript
+// 1. 继承 ToolBase 定义工具 schema
+class MyToolBase extends ToolBase {
+  schema = { name: 'my_tool', ... };
+}
+
+// 2. 继承 ToolCall 实现执行逻辑
+export class MyTool extends ToolCall {
+  tool = new MyToolBase();
+  async executeTool(toolCall) { ... }
+}
+```
+
 ---
 
 ## 参考资源
@@ -118,10 +149,18 @@ const Component = observer(() => {
 - [TypeScript 文档](https://www.typescriptlang.org/)
 - [lucide-react 图标](https://lucide.dev/)
 - [WebLLM 文档](https://github.com/mlc-ai/web-llm)
+- [MCP 规范](https://modelcontextprotocol.io/)
 
 ---
 
 ## 更新日志
+
+### 2026-01-21
+
+- ✅ 添加 Agent 核心技术栈说明
+- ✅ 添加 Agent 开发规范文档链接
+- ✅ 更新 AI 模型为 Qwen3-4B
+- ✅ 添加 MCP 相关技术栈
 
 ### 2026-01-15
 
