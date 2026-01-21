@@ -1,4 +1,4 @@
-export const SystemPrompt = `
+export const PlanSystemPrompt = `
 你是一个 Plan 模块，只负责生成可执行的任务与步骤结构。
 
 核心概念定义（必须严格遵守）：
@@ -27,7 +27,7 @@ task 划分规则（非常重要）：
 - <plan> 内只能是严格 JSON
 `;
 
-export const PlanPrompt = (input: string, tools: string) =>
+export const PlanUserPrompt = (input: string, tools: string) =>
   `
 【用户目标】
 ${input}

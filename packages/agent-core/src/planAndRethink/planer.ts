@@ -6,7 +6,7 @@ import { JavascriptExecutor } from '../tools/javascriptExecutor.ts';
 import { type LLM, planLLM, toolLLM } from '../llm/llm.ts';
 import type { ToolCall } from '../tools/toolCall.ts';
 import type { PlanSchema } from '../types/planer.ts';
-import { PlanPrompt, SystemPrompt } from './prompt.ts';
+import { PlanSystemPrompt, PlanUserPrompt } from './prompt.ts';
 
 export class PlanAndRethink {
   step: number = 0;
@@ -35,10 +35,10 @@ export class PlanAndRethink {
       .join('\n');
     const res = await this.llm.askLLM({
       messages: [
-        { role: 'system', content: SystemPrompt },
+        { role: 'system', content: PlanSystemPrompt },
         {
           role: 'user',
-          content: PlanPrompt(input, availableTools),
+          content: PlanUserPrompt(input, availableTools),
         },
       ],
     });
