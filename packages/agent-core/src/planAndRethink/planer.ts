@@ -61,4 +61,7 @@ export class PlanAndRethink {
     }
     return res;
   }
+  async rethink() {
+    throw new Error('Not implement');
+  }
 }
