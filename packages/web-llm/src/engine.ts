@@ -1,5 +1,6 @@
 import * as tvmjs from '@mlc-ai/web-runtime';
 import log from 'loglevel';
+import type { Tokenizer } from '@mlc-ai/web-tokenizers';
 import type {
   AppConfig,
   ChatConfig,
@@ -136,6 +137,7 @@ export class MLCEngine implements MLCEngineInterface {
   private interruptSignal = false;
   private deviceLostIsError = true; // whether device.lost is due to actual error or model reload
   private reloadController: AbortController | undefined;
+  private tokenizer: Tokenizer | null = null;
 
   constructor(engineConfig?: MLCEngineConfig) {
     this.loadedModelIdToPipeline = new Map<string, LLMChatPipeline | EmbeddingPipeline>();
@@ -332,7 +334,7 @@ export class MLCEngine implements MLCEngineInterface {
     });
     tvm.initWebGPU(gpuDetectOutput.device);
 
-    const tokenizer = await asyncLoadTokenizer(
+    this.tokenizer = await asyncLoadTokenizer(
       modelUrl,
       curModelConfig,
       this.appConfig,
@@ -352,9 +354,9 @@ export class MLCEngine implements MLCEngineInterface {
     // embedding model, and prompt user to use ModelRecord.model_type
     let newPipeline: LLMChatPipeline | EmbeddingPipeline;
     if (modelRecord.model_type === ModelType.embedding) {
-      newPipeline = new EmbeddingPipeline(tvm, tokenizer, curModelConfig);
+      newPipeline = new EmbeddingPipeline(tvm, this.tokenizer, curModelConfig);
     } else {
-      newPipeline = new LLMChatPipeline(tvm, tokenizer, curModelConfig, logitProcessor);
+      newPipeline = new LLMChatPipeline(tvm, this.tokenizer, curModelConfig, logitProcessor);
     }
     await newPipeline.asyncLoadWebGPUPipelines();
     this.loadedModelIdToPipeline.set(modelId, newPipeline);
@@ -1295,5 +1297,17 @@ export class MLCEngine implements MLCEngineInterface {
    */
   async decode(pipeline: LLMChatPipeline, genConfig?: GenerationConfig) {
     return pipeline.decodeStep(genConfig);
+  }
+
+  //-----------------------------------------------
+  // 8. Expose tokenizer
+  //-----------------------------------------------
+
+  async tokenize(text: string) {
+    return this.tokenizer!.encode(text);
+  }
+
+  async decodeTokens(ids: Int32Array) {
+    return this.tokenizer!.decode(ids);
   }
 }
