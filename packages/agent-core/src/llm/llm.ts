@@ -3,12 +3,15 @@ import type {
   ChatCompletionMessageParam,
   ChatCompletionTool,
 } from '@mlc-ai/web-llm/lib/openai_api_protocols/chat_completion';
+import type { Tokenizer } from '@mlc-ai/web-tokenizers';
+import { qwenTokenizer } from '../embeddings/tokenizer.ts';
 import type { ToolCallResponse } from '../types/llm.ts';
 import { ValueError } from './exceptions.ts';
 import { ToolCallSystemPrompt, ToolCallUserPrompt } from './prompt.ts';
 export class LLM {
   model_id: string;
   client: MLCEngine | null = null;
+  tokenizer: Tokenizer | null = null;
   progressText: string = '';
   ready = false;
   constructor({ model_id = 'Qwen3-4B-q4f16_1-MLC' }: { model_id?: string } = {}) {
@@ -41,6 +44,7 @@ export class LLM {
       },
       { context_window_size: 32768 },
     );
+    this.tokenizer = await qwenTokenizer.getTokenizer(this.model_id);
     await this.unload();
     this.ready = true;
   }

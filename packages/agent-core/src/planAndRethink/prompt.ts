@@ -44,6 +44,8 @@ ${tools}
 - 只输出必要的结构信息
 - 使用简短、指令式描述
 - 不输出解释性文字
+- result_file 使用有总结性的文件名，便于后续按需加载上下文
+- result_summary_hint 用于提示该步骤结果摘要应该包含的关键信息
 
 输出格式：
 
@@ -58,8 +60,8 @@ ${tools}
           "step_id": "step-1.1",
           "step_goal": "...",
           "tool_name": "...",
-          "tool_intent": "...",
-          "expected_output": "..."
+          "result_file": "...",
+          "result_summary_hint": "..."
         }
       ]
     }
