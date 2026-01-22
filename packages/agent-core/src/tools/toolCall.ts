@@ -10,13 +10,21 @@ export abstract class ToolCall {
 
   toolCall: ToolCallResponse | null = null;
 
-  async step(task: string) {
+  async step(task: string): Promise<CallToolResult> {
     const shouldAct = await this.think(task);
     console.log('shouldAct\n', shouldAct, '\n', 'toolCall:\n', this.toolCall);
     if (shouldAct) {
-      return await this.act(this.toolCall!);
+      const result = await this.act(this.toolCall!);
+      return this.sanitizeResult(result);
     }
-    return [];
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `${this.tool.name}: toolCall success, No action needed. task: ${task}`,
+        },
+      ],
+    };
   }
 
   private async think(task: string): Promise<boolean> {
@@ -34,4 +42,37 @@ export abstract class ToolCall {
     return await this.executeTool(toolCall, this.tool);
   }
   abstract executeTool(toolCall: ToolCallResponse, tool: ToolBase): Promise<CallToolResult>;
+
+  private sanitizeResult(result: CallToolResult): CallToolResult {
+    if (!result || !Array.isArray(result.content)) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Invalid tool result from ${this.tool.name}: missing content array`,
+          },
+        ],
+        isError: true,
+      };
+    }
+
+    const invalidItem = result.content.find(
+      (item) => item.type !== 'text' && item.type !== 'image',
+    );
+    if (invalidItem) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Invalid tool result from ${this.tool.name}: unsupported content type ${String(
+              invalidItem.type,
+            )}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+
+    return result;
+  }
 }
