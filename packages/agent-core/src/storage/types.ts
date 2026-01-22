@@ -2,22 +2,22 @@ export type FileRecord = {
   id: string;
   name: string;
   mimeType: string;
-  content: ArrayBuffer;
+  content: string;
   createdAt: number;
 };
 
 export type CreateFileInput = {
   name: string;
   mimeType: string;
-  content: ArrayBuffer;
+  content: string;
 };
 
 export type FileIndexRecord = {
   id: string;
   fileId: string;
   name: string;
-  summary: string;
-  tags: string[];
+  chunkText: string;
+  chunkIndex: number;
   taskId: string;
   stepId: string;
   toolName: string;
@@ -30,8 +30,8 @@ export type FileIndexRecord = {
 export type CreateFileIndexInput = {
   fileId: string;
   name: string;
-  summary: string;
-  tags?: string[];
+  chunkText: string;
+  chunkIndex: number;
   taskId: string;
   stepId: string;
   toolName: string;

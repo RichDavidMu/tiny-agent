@@ -9,11 +9,11 @@ export type FileIndexSearchResult = {
 
 const defaultEmbeddingEngine = new EmbeddingEngine();
 
-export async function indexFileWithEmbedding(
+export async function indexFileChunkWithEmbedding(
   input: CreateFileIndexInput,
   embeddingEngine: EmbeddingEngine = defaultEmbeddingEngine,
 ): Promise<FileIndexRecord> {
-  const embedding = await embeddingEngine.embed(input.summary);
+  const embedding = await embeddingEngine.embed(input.chunkText);
   const vector = new Float32Array(embedding as number[]);
   return await agentDb.fileIndex.create({
     ...input,

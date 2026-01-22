@@ -1,7 +1,7 @@
 export { Agent } from './agent.ts';
 export { EmbeddingEngine } from './embeddings/embedding.ts';
 export {
-  indexFileWithEmbedding,
+  indexFileChunkWithEmbedding,
   searchFileIndexByEmbedding,
   searchFileIndexByText,
 } from './embeddings/fileIndex.ts';

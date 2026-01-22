@@ -57,7 +57,11 @@ export class PlanAndRethink {
     for (const step of this.plans.tasks[0].steps) {
       await toolLLM.reload();
       const tool = this.tools.find((t) => t.tool.name === step.tool_name)!;
-      const result = await tool.step(step.step_goal);
+      const result = await tool.step(step.step_goal, {
+        taskId: this.plans.tasks[0].task_id,
+        stepId: step.step_id,
+        resultFile: step.result_file,
+      });
       console.log('工具调用结果\n', result);
       await toolLLM.unload();
     }
