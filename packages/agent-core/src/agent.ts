@@ -7,13 +7,13 @@ export class Agent {
   planer = new PlanAndRethink();
   mcpHost = new MCPClientHost();
   constructor() {
-    this.init();
+    void this.init();
   }
-  async init() {
+  async init(): Promise<void> {
     await this.initMcp();
   }
 
-  async initMcp() {
+  async initMcp(): Promise<void> {
     try {
       await this.mcpHost.addServer({ name: 'ddgs-search', url: 'https://renbaicai.site/ddgs/mcp' });
       const tools = this.mcpHost.getToolCalls();
@@ -23,7 +23,7 @@ export class Agent {
     }
   }
 
-  async task(input: string) {
+  async task(input: string): Promise<string> {
     return await this.planer.plan(input);
   }
 }
