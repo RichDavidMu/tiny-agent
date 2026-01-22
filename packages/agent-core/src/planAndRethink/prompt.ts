@@ -46,6 +46,7 @@ ${tools}
 - 不输出解释性文字
 - result_file 使用有总结性的文件名，便于后续按需加载上下文
 - result_summary_hint 用于提示该步骤结果摘要应该包含的关键信息
+- task_uuid 和 step_uuid 必须输出（系统会覆盖为有效 UUID）
 
 输出格式：
 
@@ -54,10 +55,12 @@ ${tools}
   "tasks": [
     {
       "task_id": "task-1",
+      "task_uuid": "uuid",
       "task_goal": "...",
       "steps": [
         {
           "step_id": "step-1.1",
+          "step_uuid": "uuid",
           "step_goal": "...",
           "tool_name": "...",
           "result_file": "...",

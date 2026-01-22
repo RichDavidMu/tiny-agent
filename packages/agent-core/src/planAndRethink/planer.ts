@@ -1,6 +1,7 @@
 /*
   任务规划与反思
  */
+import { v4 as uuidv4 } from 'uuid';
 import { LLMGenerator } from '../tools/llmGenerator.ts';
 import { JavascriptExecutor } from '../tools/javascriptExecutor.ts';
 import { type LLM, planLLM, toolLLM } from '../llm/llm.ts';
@@ -51,6 +52,7 @@ export class PlanAndRethink {
     if (!this.plans || this.plans.tasks.length === 0) {
       return '';
     }
+    this.attachUuids(this.plans);
     console.log(this.plans);
     for (const step of this.plans.tasks[0].steps) {
       await toolLLM.reload();
@@ -63,5 +65,14 @@ export class PlanAndRethink {
   }
   async rethink() {
     throw new Error('Not implement');
+  }
+
+  private attachUuids(plan: PlanSchema): void {
+    for (const task of plan.tasks) {
+      task.task_uuid = uuidv4();
+      for (const step of task.steps) {
+        step.step_uuid = uuidv4();
+      }
+    }
   }
 }
