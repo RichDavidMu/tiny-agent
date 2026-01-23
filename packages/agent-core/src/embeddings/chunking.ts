@@ -1,4 +1,4 @@
-import { qwenTokenizer } from './tokenizer.ts';
+import type { MLCEngine } from '@mlc-ai/web-llm';
 
 type ChunkOptions = {
   maxTokens?: number;
@@ -8,19 +8,9 @@ type ChunkOptions = {
 const defaultMaxTokens = 400;
 const defaultOverlapTokens = 80;
 
-export async function chunkText(text: string, options: ChunkOptions = {}): Promise<string[]> {
-  const tokenizer = await qwenTokenizer.getTokenizer();
-  return await chunkTextWithTokenizer(text, tokenizer, options);
-}
-
-type TokenizerLike = {
-  encode: (text: string) => ArrayLike<number>;
-  decode?: (tokens: Int32Array) => string;
-};
-
-export async function chunkTextWithTokenizer(
+export async function chunkText(
   text: string,
-  tokenizer: TokenizerLike,
+  engine: MLCEngine,
   options: ChunkOptions = {},
 ): Promise<string[]> {
   const maxTokens = options.maxTokens ?? defaultMaxTokens;
@@ -39,14 +29,14 @@ export async function chunkTextWithTokenizer(
     if (!block) {
       continue;
     }
-    const blockTokens = tokenizer.encode(block).length;
+    const blockTokens = (await engine.tokenize(block)).length;
     if (blockTokens > maxTokens) {
       if (current) {
         chunks.push(current);
         current = '';
         currentTokens = 0;
       }
-      const splitBlocks = await splitLargeBlockWithTokenizer(block, maxTokens, tokenizer);
+      const splitBlocks = await splitLargeBlockWithEngine(block, maxTokens, engine);
       for (const splitBlock of splitBlocks) {
         chunks.push(splitBlock);
       }
@@ -77,7 +67,7 @@ export async function chunkTextWithTokenizer(
       overlapped.push(chunks[i]);
       continue;
     }
-    const prefix = takeTailByTokensWithTokenizer(chunks[i - 1], overlapTokens, tokenizer);
+    const prefix = await takeTailByTokensWithEngine(chunks[i - 1], overlapTokens, engine);
     overlapped.push(prefix ? `${prefix}\n\n${chunks[i]}` : chunks[i]);
   }
   return overlapped;
@@ -100,10 +90,10 @@ function splitBySentence(text: string): string[] {
   return sentences.length > 0 ? sentences : [text];
 }
 
-async function splitLargeBlockWithTokenizer(
+async function splitLargeBlockWithEngine(
   block: string,
   maxTokens: number,
-  tokenizer: TokenizerLike,
+  engine: MLCEngine,
 ): Promise<string[]> {
   const sentences = splitBySentence(block);
   const chunks: string[] = [];
@@ -111,14 +101,14 @@ async function splitLargeBlockWithTokenizer(
   let currentTokens = 0;
 
   for (const sentence of sentences) {
-    const sentenceTokens = tokenizer.encode(sentence).length;
+    const sentenceTokens = (await engine.tokenize(sentence)).length;
     if (sentenceTokens > maxTokens) {
       if (current) {
         chunks.push(current);
         current = '';
         currentTokens = 0;
       }
-      chunks.push(...hardSplitWithTokenizer(sentence, maxTokens, tokenizer));
+      chunks.push(...(await hardSplitWithEngine(sentence, maxTokens, engine)));
       continue;
     }
 
@@ -139,40 +129,35 @@ async function splitLargeBlockWithTokenizer(
   return chunks;
 }
 
-function hardSplitWithTokenizer(
+async function hardSplitWithEngine(
   text: string,
   maxTokens: number,
-  tokenizer: TokenizerLike,
-): string[] {
-  const tokens = tokenizer.encode(text);
+  engine: MLCEngine,
+): Promise<string[]> {
+  const tokens = await engine.tokenize(text);
   if (tokens.length <= maxTokens) {
     return [text];
   }
   const chunks: string[] = [];
-  const tokenArray = Array.from(tokens);
-  for (let i = 0; i < tokenArray.length; i += maxTokens) {
-    const slice = tokenArray.slice(i, i + maxTokens);
-    if (tokenizer.decode) {
-      chunks.push(tokenizer.decode(Int32Array.from(slice)));
-    } else {
-      chunks.push(text.slice(0, Math.min(text.length, maxTokens * 4)));
-    }
+  for (let i = 0; i < tokens.length; i += maxTokens) {
+    const slice = tokens.slice(i, i + maxTokens);
+    chunks.push(await engine.decodeTokens(slice));
   }
   return chunks;
 }
 
-function takeTailByTokensWithTokenizer(
+async function takeTailByTokensWithEngine(
   text: string,
   targetTokens: number,
-  tokenizer: TokenizerLike,
-): string {
-  const tokens = tokenizer.encode(text);
+  engine: {
+    tokenize: (input: string) => Promise<Int32Array>;
+    decodeTokens: (input: Int32Array) => Promise<string>;
+  },
+): Promise<string> {
+  const tokens = await engine.tokenize(text);
   if (tokens.length <= targetTokens) {
     return text;
   }
-  const tail = Array.from(tokens).slice(tokens.length - targetTokens);
-  if (tokenizer.decode) {
-    return tokenizer.decode(Int32Array.from(tail));
-  }
-  return text.slice(Math.max(0, text.length - targetTokens));
+  const tail = tokens.slice(tokens.length - targetTokens);
+  return await engine.decodeTokens(tail);
 }
