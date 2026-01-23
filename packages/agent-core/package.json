@@ -15,8 +15,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.26.2",
   "dependencies": {
-    "@mlc-ai/web-llm": "^0.2.80",
-    "@mlc-ai/web-tokenizers": "^0.1.6",
+    "@mlc-ai/web-llm": "workspace:*",
     "mcp-bridge-extension": "workspace:*",
     "uuid": "^11.1.0"
   },

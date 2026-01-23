@@ -62,11 +62,8 @@ importers:
   packages/agent-core:
     dependencies:
       '@mlc-ai/web-llm':
-        specifier: ^0.2.80
-        version: 0.2.80
-      '@mlc-ai/web-tokenizers':
-        specifier: ^0.1.6
-        version: 0.1.6
+        specifier: workspace:*
+        version: link:../web-llm
       mcp-bridge-extension:
         specifier: workspace:*
         version: link:../mcp-bridge-extension
@@ -122,6 +119,9 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.2.8
         version: 1.2.8(@types/react-dom@19.2.3(@types/react@19.2.8))(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@types/lodash':
+        specifier: ^4.17.23
+        version: 4.17.23
       agent-core:
         specifier: workspace:*
         version: link:../agent-core
@@ -131,6 +131,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      lodash:
+        specifier: ^4.17.23
+        version: 4.17.23
       lucide-react:
         specifier: ^0.562.0
         version: 0.562.0(react@19.2.3)
@@ -2684,6 +2687,12 @@ packages:
     resolution:
       {
         integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==,
+      }
+
+  '@types/lodash@4.17.23':
+    resolution:
+      {
+        integrity: sha512-RDvF6wTulMPjrNdCoYRC8gNR880JNGT8uB+REUpC2Ns4pRqQJhGz90wh7rgdXDPpCczF3VGktDuFGVnz8zP7HA==,
       }
 
   '@types/mdast@4.0.4':
@@ -5747,6 +5756,12 @@ packages:
     resolution:
       {
         integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==,
+      }
+
+  lodash@4.17.23:
+    resolution:
+      {
+        integrity: sha512-LgVTMpQtIopCi79SJeDiP0TfWi5CNEc/L/aRdTh3yIvmZXTnheWpKjSZhnvMl8iXbC1tFg9gdHHDMLoV7CnG+w==,
       }
 
   log-symbols@6.0.0:
@@ -9844,6 +9859,8 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
+  '@types/lodash@4.17.23': {}
+
   '@types/mdast@4.0.4':
     dependencies:
       '@types/unist': 3.0.3
@@ -11907,6 +11924,8 @@ snapshots:
   lodash.merge@4.6.2: {}
 
   lodash@4.17.21: {}
+
+  lodash@4.17.23: {}
 
   log-symbols@6.0.0:
     dependencies:

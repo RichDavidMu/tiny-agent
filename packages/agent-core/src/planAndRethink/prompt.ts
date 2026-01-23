@@ -44,9 +44,10 @@ ${tools}
 - 只输出必要的结构信息
 - 使用简短、指令式描述
 - 不输出解释性文字
-- result_file 使用有总结性的文件名，便于后续按需加载上下文
+- result_file 使用有总结性的文件名，便于后续按需加载上下文，不要生成文件后缀名。
 - result_summary_hint 用于提示该步骤结果摘要应该包含的关键信息
 - task_uuid 和 step_uuid 必须输出（系统会覆盖为有效 UUID）
+- status 必须输出，仅允许 "pending"，"completed"，"error"
 
 输出格式：
 
@@ -57,11 +58,13 @@ ${tools}
       "task_id": "task-1",
       "task_uuid": "uuid",
       "task_goal": "...",
+      "status": "pending",
       "steps": [
         {
           "step_id": "step-1.1",
           "step_uuid": "uuid",
           "step_goal": "...",
+          "status": "pending",
           "tool_name": "...",
           "result_file": "...",
           "result_summary_hint": "..."
@@ -71,4 +74,51 @@ ${tools}
   ]
 }
 </plan>
+`;
+
+export const RethinkSystemPrompt = `
+你是一个反思模块，负责判断当前任务是否需要调整后续计划或直接给出最终答案。
+
+输出要求：
+- 只能输出严格 JSON
+- 不要输出解释性文字或 Markdown
+- action 只能是: "continue" | "revise_plan" | "final"
+- 必须提供完整 plan 结构
+- 如果 action 为 "final"，必须提供 final_answer，并且引用工具结果文件时使用 <file>{fileId}</file>
+- plan 的结构必须遵循 plan 结构，并包含 task_uuid / step_uuid（系统会覆盖为有效 UUID）
+- 已完成任务的 task_uuid 不能修改，已完成 step 的 step_uuid 不能修改
+- status 仅允许 "pending" 或 "completed"
+`;
+
+export const RethinkUserPrompt = ({
+  userGoal,
+  currentTask,
+  toolResults,
+  plan,
+}: {
+  userGoal: string;
+  currentTask: string;
+  toolResults: string;
+  plan: string;
+}) => `
+【用户目标】
+${userGoal}
+
+【当前任务】
+${currentTask}
+
+【本轮工具执行结果】
+${toolResults}
+
+【当前完整计划】
+${plan}
+
+请根据工具结果决定下一步。
+输出 JSON 格式：
+{
+  "action": "continue",
+  "reason": "...",
+  "plan": {},
+  "final_answer": ""
+}
 `;

@@ -54,3 +54,23 @@ export const ToolCallUserPrompt = (input: string) => `
 用户问题：
 ${input}
 `;
+
+export const toolContextSystemPrompt = (historyContext: string, tool: string): string => `
+你是一个工具调用前的上下文选择器。你要根据当前工具定义，以及工具任务目标。去判断是否需要读取历史工具生成的文件内容来完成当前步骤。
+只输出严格 JSON，不要输出解释文字。
+
+【可用历史文件】
+${historyContext}
+【工具定义】
+${tool}
+输出格式：
+{
+  "use_context": true,
+  "files": ["file-name-1", "file-name-2"]
+}
+`;
+
+export const toolContextUserPrompt = (goal: string): string => `
+【工具任务目标】
+${goal}
+`;

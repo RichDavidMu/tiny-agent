@@ -3,9 +3,16 @@ import type {
   ChatCompletionMessageParam,
   ChatCompletionTool,
 } from '@mlc-ai/web-llm/lib/openai_api_protocols/chat_completion';
-import type { ToolCallResponse } from '../types/llm.ts';
+import type { ToolCallResponse, ToolContextDecision } from '../types/llm.ts';
+import { parseLLMReply } from '../utils/llmHelper.ts';
+import type { StepSchema } from '../types/planer.ts';
 import { ValueError } from './exceptions.ts';
-import { ToolCallSystemPrompt, ToolCallUserPrompt } from './prompt.ts';
+import {
+  ToolCallSystemPrompt,
+  ToolCallUserPrompt,
+  toolContextSystemPrompt,
+  toolContextUserPrompt,
+} from './prompt.ts';
 export class LLM {
   model_id: string;
   client: MLCEngine | null = null;
@@ -88,23 +95,59 @@ export class LLM {
     await this.unload();
     return fullResponse;
   }
-  async toolCall({ task, tool }: { task: string; tool: ChatCompletionTool }) {
+  async toolCall({
+    step,
+    tool,
+    context,
+  }: {
+    step: StepSchema;
+    tool: ChatCompletionTool;
+    context: string;
+  }): Promise<ToolCallResponse> {
     if (!this.client) {
       throw new ValueError('No available LLM client');
     }
+    const taskWithContext = context ? `${step.step_goal}\n\nContext:\n${context}` : step.step_goal;
     const messages: ChatCompletionMessageParam[] = [
       { role: 'system', content: ToolCallSystemPrompt(JSON.stringify(tool, null, 2)) },
-      { role: 'user', content: ToolCallUserPrompt(task) },
+      { role: 'user', content: ToolCallUserPrompt(taskWithContext) },
     ];
     const response = await this.client.chat.completions.create({
       messages,
     });
-    const content = response.choices[0].message.content;
-    if (!content || !content.includes('</think>')) {
+    if (!response.choices[0].message.content) {
       throw new ValueError('Empty response from LLM');
     }
-    const toolCall = content.split('</think>')[1];
-    return JSON.parse(toolCall) as ToolCallResponse;
+    const { content } = parseLLMReply(response.choices[0].message.content);
+    return JSON.parse(content) as ToolCallResponse;
+  }
+
+  async toolContext({
+    step,
+    tool,
+    historyContext,
+  }: {
+    step: StepSchema;
+    tool: ChatCompletionTool;
+    historyContext: string;
+  }): Promise<ToolContextDecision> {
+    if (!this.client) {
+      throw new ValueError('No available LLM client');
+    }
+    const response = await this.client?.chat.completions.create({
+      messages: [
+        {
+          role: 'system',
+          content: toolContextSystemPrompt(historyContext, JSON.stringify(tool, null, 2)),
+        },
+        { role: 'user', content: toolContextUserPrompt(step.step_goal) },
+      ],
+    });
+    if (!response.choices[0].message.content) {
+      throw new ValueError('Empty response from LLM');
+    }
+    const { content } = parseLLMReply(response.choices[0].message.content);
+    return JSON.parse(content) as ToolContextDecision;
   }
 }
 export const planLLM = new LLM();

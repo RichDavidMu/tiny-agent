@@ -7,6 +7,7 @@ export type FileRecord = {
 };
 
 export type CreateFileInput = {
+  id?: string;
   name: string;
   mimeType: string;
   content: string;

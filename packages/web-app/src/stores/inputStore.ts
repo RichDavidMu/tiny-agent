@@ -32,7 +32,7 @@ export class InputStore {
       }
     }, 1000);
     await ready;
-    const plan = await this.agent.planer.plan(this.input);
+    const plan = await this.agent.planer.generatePlan(this.input);
     // if (!llm.client) {
     //   toast.error('Loading model...');
     //   return;

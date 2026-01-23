@@ -24,6 +24,6 @@ export class Agent {
   }
 
   async task(input: string): Promise<string> {
-    return await this.planer.plan(input);
+    return await this.planer.generatePlan(input);
   }
 }

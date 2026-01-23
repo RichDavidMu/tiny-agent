@@ -13,7 +13,7 @@ export class FileTable {
   async create(input: CreateFileInput): Promise<FileRecord> {
     const db = await this.getDb();
     const record: FileRecord = {
-      id: uuidv4(),
+      id: input.id ?? uuidv4(),
       name: input.name,
       mimeType: input.mimeType,
       content: input.content,
