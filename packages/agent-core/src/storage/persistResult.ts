@@ -38,17 +38,21 @@ export async function persistResult(
 
   // Only save file if execution was successful
   if (!isError) {
-    const fileRecord = await agentDb.file.create({
-      name: fileName,
-      mimeType: mimeType,
-      content: fileContent,
-    });
-    fileId = fileRecord.id;
+    try {
+      const fileRecord = await agentDb.file.create({
+        name: fileName,
+        mimeType: mimeType,
+        content: fileContent,
+      });
+      fileId = fileRecord.id;
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   // Always record to toolResult table
   await agentDb.toolResult.create({
-    stepId: step.step_id,
+    stepId: step.step_uuid!,
     taskId: taskId,
     result: resultText,
     isError: isError,

@@ -109,7 +109,6 @@ export class PlanAndRethink {
       await toolLLM.reload();
       for (let stepIndex = 0; stepIndex < task.steps.length; stepIndex += 1) {
         const step = task.steps[stepIndex];
-        console.log(this.tools);
         const tool = this.tools.find((t) => t.tool.name === step.tool_name);
         let result: ICallToolResult;
         if (!tool) {
@@ -117,9 +116,19 @@ export class PlanAndRethink {
         } else {
           result = await tool.step(step, this.plan!);
         }
+        if (result.isError) {
+          step.status = 'error';
+        } else {
+          step.status = 'completed';
+        }
         console.log('工具调用结果\n', result);
-        await persistResult(result, step, task.task_id);
+        try {
+          await persistResult(result, step, task.task_uuid!);
+        } catch (e) {
+          console.log(e);
+        }
       }
+      task.status = 'completed';
       await toolLLM.unload();
       const rethink = await this.runRethink(input, task);
       rethinkRounds += 1;
@@ -165,7 +174,6 @@ export class PlanAndRethink {
       ],
       stream: true,
     });
-    console.log(textStream);
     const parsedStream = textStream
       .pipeThrough(createThinkingContentTransform())
       .pipeThrough(createContentStructParseTransform());
@@ -174,7 +182,9 @@ export class PlanAndRethink {
     let status = '';
     const reader = parsedStream.getReader();
     let chunk: ReadableStreamReadResult<StructuredChunk>;
+    let full = '';
     while (!(chunk = await reader.read()).done) {
+      full += chunk.value.content;
       if (chunk.value.type === 'plan') {
         planText += chunk.value.content;
       }
@@ -188,6 +198,7 @@ export class PlanAndRethink {
     console.log('final', finalText);
     console.log('status:', status);
     console.log('plan', planText);
+    console.log('full', full);
     await this.llm.unload();
     switch (status) {
       case 'continue':
@@ -215,7 +226,7 @@ export class PlanAndRethink {
   > {
     const results = [];
     for (const step of task.steps) {
-      const toolResult = await agentDb.toolResult.findByStepId(step.step_id);
+      const toolResult = await agentDb.toolResult.findByStepId(step.step_uuid!);
       if (toolResult) {
         results.push({
           step_id: step.step_id,

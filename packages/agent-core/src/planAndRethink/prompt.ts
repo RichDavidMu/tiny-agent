@@ -132,7 +132,14 @@ ${plan}
 请根据工具结果决定下一步。
 
 【输出格式】
-<status>action</status>
+格式一
+<status>continue</status>
+
+格式二
+<status>changed</status>
 <plan>plan</plan>
+
+格式三
+<status>done</status>
 <final_answer>answer</final_answer>
 `;

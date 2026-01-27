@@ -1,4 +1,4 @@
-import type { WebWorkerMLCEngine } from '@mlc-ai/web-llm';
+import type { ChatCompletionToolMessageParam, WebWorkerMLCEngine } from '@mlc-ai/web-llm';
 import { CreateWebWorkerMLCEngine } from '@mlc-ai/web-llm';
 import type {
   ChatCompletionMessageParam,
@@ -105,15 +105,15 @@ export class LLM {
   }: {
     step: StepSchema;
     tool: ChatCompletionTool;
-    context: string;
+    context: ChatCompletionToolMessageParam[];
   }): Promise<ToolCallResponse> {
     if (!this.client) {
       throw new ValueError('No available LLM client');
     }
-    const taskWithContext = context ? `${step.step_goal}\n\nContext:\n${context}` : step.step_goal;
     const messages: ChatCompletionMessageParam[] = [
       { role: 'system', content: ToolCallSystemPrompt(JSON.stringify(tool, null, 2)) },
-      { role: 'user', content: ToolCallUserPrompt(taskWithContext) },
+      ...context,
+      { role: 'user', content: ToolCallUserPrompt(step.step_goal) },
     ];
     const response = await this.client.chat.completions.create({
       messages,
