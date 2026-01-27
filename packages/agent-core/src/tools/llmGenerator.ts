@@ -32,7 +32,7 @@ export class LLMGenerator extends ToolCall {
     }
     const res = await this.llm.askLLM({
       messages: [{ role: 'user', content: args.task }],
-      stream: true,
+      stream: false,
     });
     return {
       content: [{ type: 'text', text: res }],

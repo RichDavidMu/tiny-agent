@@ -19,8 +19,8 @@ export interface AskLLMInputBase {
   enableThinking?: boolean;
 }
 export interface AskLLMInputStreaming extends AskLLMInputBase {
-  streaming: true;
+  stream: true;
 }
 export interface AskLLMInputNonStreaming {
-  streaming: false;
+  stream: false;
 }
