@@ -2,12 +2,19 @@
   任务规划与反思
  */
 import { v4 as uuidv4 } from 'uuid';
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { LLMGenerator } from '../tools/llmGenerator.ts';
 import { JavascriptExecutor } from '../tools/javascriptExecutor.ts';
 import { type LLM, planLLM, toolLLM } from '../llm/llm.ts';
 import type { ToolCall } from '../tools/toolCall.ts';
-import type { PlanSchema } from '../types/planer.ts';
+import type { PlanSchema, RethinkRes } from '../types/planer.ts';
 import { agentDb } from '../storage/db.ts';
+import { MaxRethinkReached, ValueError } from '../utils/exceptions.ts';
+import { createThinkingContentTransform } from '../llm/transformers/thinkingContentTransform.ts';
+import {
+  type StructuredChunk,
+  createContentStructParseTransform,
+} from '../llm/transformers/contentStructParseTransform.ts';
 import {
   PlanSystemPrompt,
   PlanUserPrompt,
@@ -15,12 +22,7 @@ import {
   RethinkUserPrompt,
 } from './prompt.ts';
 
-type RethinkResponse = {
-  action: 'continue' | 'revise_plan' | 'final';
-  reason?: string;
-  plan: PlanSchema;
-  final_answer?: string;
-};
+const MAX_RETHINK_ROUND = 10;
 
 export class PlanAndRethink {
   step: number = 0;
@@ -43,11 +45,17 @@ export class PlanAndRethink {
 
   plan: PlanSchema | null = null;
 
-  async generatePlan(input: string): Promise<string> {
+  async generatePlan(input: string) {
     const availableTools = this.tools
-      .map((t) => `- ${t.tool.name}: ${t.tool.description}`)
-      .join('\n');
-    const res = await this.llm.askLLM({
+      .map(
+        (t) =>
+          `tool_name: ${t.tool.name}\ntool_description: \n${t.tool.description}
+          `,
+      )
+      .join('\n\n');
+    console.log(availableTools);
+    await this.llm.reload();
+    const textStream = await this.llm.askLLM({
       messages: [
         { role: 'system', content: PlanSystemPrompt },
         {
@@ -55,50 +63,73 @@ export class PlanAndRethink {
           content: PlanUserPrompt(input, availableTools),
         },
       ],
+      stream: true,
     });
-    // eslint-disable-next-line regexp/no-super-linear-backtracking
-    const plantext = /<plan>\s*([\s\S]*?)\s*<\/plan>/.exec(res)?.[1];
-    if (!plantext) {
-      return '';
+    const parsedStream = textStream
+      .pipeThrough(createThinkingContentTransform())
+      .pipeThrough(createContentStructParseTransform());
+    let planText = '';
+    let thinkingText = '';
+    const reader = parsedStream.getReader();
+    let chunk: ReadableStreamReadResult<StructuredChunk>;
+    while (!(chunk = await reader.read()).done) {
+      if (chunk.value.type === 'plan') {
+        planText += chunk.value.content;
+      }
+      if (chunk.value.type === 'thinking') {
+        thinkingText += chunk.value.content;
+      }
     }
-    this.plan = JSON.parse(plantext);
+    console.log(thinkingText);
+    console.log(planText);
+    await this.llm.unload();
+    if (!planText) {
+      return;
+    }
+    this.plan = JSON.parse(planText);
     if (!this.plan || this.plan.tasks.length === 0) {
-      return '';
+      return;
     }
     this.attachUuids(this.plan);
     console.log(this.plan);
+    await this.executePlan(input);
+  }
+  async executePlan(input: string) {
     let rethinkRounds = 0;
     while (true) {
-      if (rethinkRounds >= 10) {
-        return 'Rethink limit reached (10 rounds).';
+      if (rethinkRounds >= MAX_RETHINK_ROUND) {
+        throw new MaxRethinkReached();
       }
-      const taskIndex = this.plan.tasks.findIndex((task) => task.status !== 'completed');
-      if (taskIndex === -1) {
+      const pendingTask = this.plan!.tasks.findIndex((task) => task.status !== 'completed');
+      if (pendingTask === -1) {
         break;
       }
-      const task = this.plan.tasks[taskIndex];
+      const task = this.plan!.tasks[pendingTask];
       for (let stepIndex = 0; stepIndex < task.steps.length; stepIndex += 1) {
         const step = task.steps[stepIndex];
         await toolLLM.reload();
-        const tool = this.tools.find((t) => t.tool.name === step.tool_name)!;
-        const result = await tool.step(step, this.plan);
+        console.log(this.tools);
+        const tool = this.tools.find((t) => t.tool.name === step.tool_name);
+        let result: CallToolResult;
+        if (!tool) {
+          result = { isError: true, content: [{ text: '工具不存在', type: 'text' }] };
+        } else {
+          result = await tool.step(step, this.plan!);
+        }
         console.log('工具调用结果\n', result);
-        step.status = result.isError ? 'pending' : 'completed';
         await toolLLM.unload();
       }
-      task.status = task.steps.every((step) => step.status === 'completed')
-        ? 'completed'
-        : 'pending';
-
-      const rethink = await this.runRethink(input, task, this.plan);
+      const rethink = await this.runRethink(input, task);
       rethinkRounds += 1;
-      if (rethink.action === 'final' && rethink.final_answer) {
-        return rethink.final_answer;
+      if (rethink.status === 'done') {
+        return rethink.finalAnswer;
+      } else if (rethink.status === 'changed') {
+        this.plan = this.reconcilePlan(this.plan!, rethink.plan);
+      } else {
+        task.status = 'completed';
+        task.steps.forEach((s) => (s.status = 'completed'));
       }
-      this.plan = this.reconcilePlan(this.plan, rethink.plan);
     }
-
-    return res;
   }
   private attachUuids(plan: PlanSchema): void {
     for (const task of plan.tasks) {
@@ -114,10 +145,10 @@ export class PlanAndRethink {
   private async runRethink(
     userGoal: string,
     task: PlanSchema['tasks'][number],
-    plan: PlanSchema,
-  ): Promise<RethinkResponse> {
+  ): Promise<RethinkRes> {
     const toolResults = await this.buildToolResults(task);
-    const response = await this.llm.askLLM({
+    await this.llm.reload();
+    const textStream = await this.llm.askLLM({
       messages: [
         { role: 'system', content: RethinkSystemPrompt },
         {
@@ -126,14 +157,47 @@ export class PlanAndRethink {
             userGoal,
             currentTask: JSON.stringify(task, null, 2),
             toolResults: JSON.stringify(toolResults, null, 2),
-            plan: JSON.stringify(plan, null, 2),
+            plan: JSON.stringify(this.plan, null, 2),
           }),
         },
       ],
+      stream: true,
     });
-
-    const rethinkJson = this.extractJson(response);
-    return JSON.parse(rethinkJson) as RethinkResponse;
+    console.log(textStream);
+    const parsedStream = textStream
+      .pipeThrough(createThinkingContentTransform())
+      .pipeThrough(createContentStructParseTransform());
+    let planText = '';
+    let finalText = '';
+    let status = '';
+    const reader = parsedStream.getReader();
+    let chunk: ReadableStreamReadResult<StructuredChunk>;
+    while (!(chunk = await reader.read()).done) {
+      if (chunk.value.type === 'plan') {
+        planText += chunk.value.content;
+      }
+      if (chunk.value.type === 'final') {
+        finalText += chunk.value.content;
+      }
+      if (chunk.value.type === 'status') {
+        status = chunk.value.content;
+      }
+    }
+    console.log('final', finalText);
+    console.log('status:', status);
+    console.log('plan', planText);
+    await this.llm.unload();
+    switch (status) {
+      case 'continue':
+        return { status };
+      case 'done':
+        return { status, finalAnswer: finalText };
+      case 'changed':
+        return { status, plan: JSON.parse(planText) };
+      default: {
+        throw new ValueError('Unknown status from rethink: ' + status);
+      }
+    }
   }
 
   private async buildToolResults(task: PlanSchema['tasks'][number]): Promise<
@@ -202,13 +266,5 @@ export class PlanAndRethink {
     });
 
     return { tasks: mergedTasks };
-  }
-
-  private extractJson(content: string): string {
-    const match = /\{[\s\S]*\}/.exec(content);
-    if (!match) {
-      throw new Error('Rethink output does not contain JSON');
-    }
-    return match[0];
   }
 }

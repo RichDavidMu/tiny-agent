@@ -1,4 +1,5 @@
-import { CreateMLCEngine, type MLCEngine } from '@mlc-ai/web-llm';
+import type { WebWorkerMLCEngine } from '@mlc-ai/web-llm';
+import { CreateWebWorkerMLCEngine } from '@mlc-ai/web-llm';
 import type {
   ChatCompletionMessageParam,
   ChatCompletionTool,
@@ -23,7 +24,7 @@ import { ChunkIterableToReadableStream } from './utils.ts';
 
 export class LLM {
   model_id: string;
-  client: MLCEngine | null = null;
+  client: WebWorkerMLCEngine | null = null;
   progressText: string = '';
   ready = false;
   constructor({ model_id = 'Qwen3-4B-q4f16_1-MLC' }: { model_id?: string } = {}) {
@@ -47,7 +48,10 @@ export class LLM {
   }
 
   async load(): Promise<void> {
-    this.client = await CreateMLCEngine(
+    this.client = await CreateWebWorkerMLCEngine(
+      new Worker(new URL('./worker.ts', import.meta.url), {
+        type: 'module',
+      }),
       this.model_id,
       {
         initProgressCallback: (progress) => {
@@ -74,7 +78,6 @@ export class LLM {
     if (!this.client) {
       throw new ValueError('No available LLM client');
     }
-    await this.reload();
     if (!stream) {
       const response = await this.client.chat.completions.create({
         messages,
@@ -92,7 +95,7 @@ export class LLM {
         enable_thinking: enableThinking,
       },
     });
-    return ChunkIterableToReadableStream(response, { onStop: this.unload.bind(this) });
+    return ChunkIterableToReadableStream(response);
   }
   async toolCall({
     step,

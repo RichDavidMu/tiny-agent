@@ -17,3 +17,17 @@ export interface StepSchema {
   result_file: string;
   result_summary_hint: string;
 }
+export interface ContinueRes {
+  status: 'continue';
+}
+export interface DoneRes {
+  status: 'done';
+  finalAnswer: string;
+}
+
+export interface ChangedRes {
+  status: 'changed';
+  plan: PlanSchema;
+}
+
+export type RethinkRes = ContinueRes | DoneRes | ChangedRes;

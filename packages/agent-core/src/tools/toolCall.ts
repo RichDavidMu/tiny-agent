@@ -19,19 +19,18 @@ export abstract class ToolCall {
     let result: CallToolResult;
     if (shouldAct) {
       result = await this.act(this.toolCall!);
-      const sanitized = this.sanitizeResult(result);
-      await this.persistResult(sanitized, step);
-      return sanitized;
+    } else {
+      result = {
+        content: [
+          {
+            type: 'text',
+            text: `${this.tool.name}: toolCall success, No action needed. task: ${step.step_goal}`,
+          },
+        ],
+      };
     }
-    result = {
-      content: [
-        {
-          type: 'text',
-          text: `${this.tool.name}: toolCall success, No action needed. task: ${step.step_goal}`,
-        },
-      ],
-    };
-    await this.persistResult(result, step);
+    const sanitized = this.sanitizeResult(result);
+    await this.persistResult(sanitized, step);
     return result;
   }
 
