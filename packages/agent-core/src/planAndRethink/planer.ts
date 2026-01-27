@@ -207,21 +207,37 @@ export class PlanAndRethink {
       step_id: string;
       step_goal: string;
       tool_name: string;
+      result: string;
+      is_error: boolean;
       result_file: string;
       file_id: string | null;
     }>
   > {
     const results = [];
     for (const step of task.steps) {
-      const files = await agentDb.file.findByName(step.result_file);
-      const fileId = files.length > 0 ? files[files.length - 1].id : null;
-      results.push({
-        step_id: step.step_id,
-        step_goal: step.step_goal,
-        tool_name: step.tool_name,
-        result_file: step.result_file,
-        file_id: fileId,
-      });
+      const toolResult = await agentDb.toolResult.findByStepId(step.step_id);
+      if (toolResult) {
+        results.push({
+          step_id: step.step_id,
+          step_goal: step.step_goal,
+          tool_name: step.tool_name,
+          result: toolResult.result,
+          is_error: toolResult.isError,
+          result_file: toolResult.resultFile,
+          file_id: toolResult.fileId,
+        });
+      } else {
+        // Fallback if no tool result found
+        results.push({
+          step_id: step.step_id,
+          step_goal: step.step_goal,
+          tool_name: step.tool_name,
+          result: 'No result recorded',
+          is_error: true,
+          result_file: step.result_file,
+          file_id: null,
+        });
+      }
     }
     return results;
   }

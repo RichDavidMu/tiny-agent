@@ -47,8 +47,8 @@ export type ToolResultRecord = {
   taskId: string;
   result: string;
   isError: boolean;
-  resultFile?: string;
-  fileId?: string;
+  resultFile: string;
+  fileId: string | null;
   createdAt: number;
 };
 
@@ -58,6 +58,6 @@ export type CreateToolResultInput = {
   taskId: string;
   result: string;
   isError: boolean;
-  resultFile?: string;
-  fileId?: string;
+  resultFile: string;
+  fileId: string | null;
 };

@@ -34,7 +34,7 @@ export async function persistResult(
     fileContent = resultText;
   }
 
-  let fileId: string | undefined;
+  let fileId: string | null = null;
 
   // Only save file if execution was successful
   if (!isError) {
