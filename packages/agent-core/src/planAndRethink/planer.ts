@@ -2,19 +2,20 @@
   任务规划与反思
  */
 import { v4 as uuidv4 } from 'uuid';
-import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { LLMGenerator } from '../tools/llmGenerator.ts';
 import { JavascriptExecutor } from '../tools/javascriptExecutor.ts';
 import { type LLM, planLLM, toolLLM } from '../llm/llm.ts';
 import type { ToolCall } from '../tools/toolCall.ts';
 import type { PlanSchema, RethinkRes } from '../types/planer.ts';
 import { agentDb } from '../storage/db.ts';
+import { persistResult } from '../storage/persistResult.ts';
 import { MaxRethinkReached, ValueError } from '../utils/exceptions.ts';
 import { createThinkingContentTransform } from '../llm/transformers/thinkingContentTransform.ts';
 import {
   type StructuredChunk,
   createContentStructParseTransform,
 } from '../llm/transformers/contentStructParseTransform.ts';
+import type { ICallToolResult } from '../types/tools.ts';
 import {
   PlanSystemPrompt,
   PlanUserPrompt,
@@ -105,20 +106,21 @@ export class PlanAndRethink {
         break;
       }
       const task = this.plan!.tasks[pendingTask];
+      await toolLLM.reload();
       for (let stepIndex = 0; stepIndex < task.steps.length; stepIndex += 1) {
         const step = task.steps[stepIndex];
-        await toolLLM.reload();
         console.log(this.tools);
         const tool = this.tools.find((t) => t.tool.name === step.tool_name);
-        let result: CallToolResult;
+        let result: ICallToolResult;
         if (!tool) {
           result = { isError: true, content: [{ text: '工具不存在', type: 'text' }] };
         } else {
           result = await tool.step(step, this.plan!);
         }
         console.log('工具调用结果\n', result);
-        await toolLLM.unload();
+        await persistResult(result, step, task.task_id);
       }
+      await toolLLM.unload();
       const rethink = await this.runRethink(input, task);
       rethinkRounds += 1;
       if (rethink.status === 'done') {

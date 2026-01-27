@@ -40,3 +40,24 @@ export type CreateFileIndexInput = {
   embeddingDim?: number;
   embeddingModel?: string;
 };
+
+export type ToolResultRecord = {
+  id: string;
+  stepId: string;
+  taskId: string;
+  result: string;
+  isError: boolean;
+  resultFile?: string;
+  fileId?: string;
+  createdAt: number;
+};
+
+export type CreateToolResultInput = {
+  id?: string;
+  stepId: string;
+  taskId: string;
+  result: string;
+  isError: boolean;
+  resultFile?: string;
+  fileId?: string;
+};

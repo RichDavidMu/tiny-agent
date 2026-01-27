@@ -1,15 +1,19 @@
 import { FileTable } from './fileTable.ts';
+import { ToolResultTable } from './toolResultTable.ts';
 
 export class AgentDb {
   private readonly dbName = 'agent-core';
-  private readonly version = 1;
+  private readonly version = 3;
   private readonly fileStoreName = 'files';
+  private readonly toolResultStoreName = 'toolResults';
   private dbPromise: Promise<IDBDatabase> | null = null;
 
   readonly file: FileTable;
+  readonly toolResult: ToolResultTable;
 
   constructor() {
     this.file = new FileTable(() => this.openDb(), this.fileStoreName);
+    this.toolResult = new ToolResultTable(() => this.openDb(), this.toolResultStoreName);
   }
 
   private ensureIndexedDb(): void {
@@ -32,6 +36,11 @@ export class AgentDb {
         if (!db.objectStoreNames.contains(this.fileStoreName)) {
           const store = db.createObjectStore(this.fileStoreName, { keyPath: 'id' });
           store.createIndex('name', 'name', { unique: false });
+        }
+        if (!db.objectStoreNames.contains(this.toolResultStoreName)) {
+          const store = db.createObjectStore(this.toolResultStoreName, { keyPath: 'id' });
+          store.createIndex('stepId', 'stepId', { unique: true });
+          store.createIndex('taskId', 'taskId', { unique: true });
         }
       };
       request.onsuccess = () => resolve(request.result);

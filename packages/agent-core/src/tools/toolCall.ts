@@ -3,6 +3,7 @@ import { type LLM, toolLLM } from '../llm/llm.ts';
 import { agentDb } from '../storage/db.ts';
 import type { ToolCallResponse } from '../types/llm.ts';
 import type { PlanSchema, StepSchema } from '../types/planer.ts';
+import type { ICallToolResult } from '../types/tools.ts';
 import type ToolBase from './toolBase.ts';
 
 export abstract class ToolCall {
@@ -12,7 +13,7 @@ export abstract class ToolCall {
 
   toolCall: ToolCallResponse | null = null;
 
-  async step(step: StepSchema, plan: PlanSchema): Promise<CallToolResult> {
+  async step(step: StepSchema, plan: PlanSchema): Promise<ICallToolResult> {
     const toolContext = await this.buildToolCallContext(step, plan);
     const shouldAct = await this.think(step, toolContext);
     console.log('shouldAct\n', shouldAct, '\n', 'toolCall:\n', this.toolCall);
@@ -29,9 +30,7 @@ export abstract class ToolCall {
         ],
       };
     }
-    const sanitized = this.sanitizeResult(result);
-    await this.persistResult(sanitized, step);
-    return result;
+    return this.sanitizeResult(result);
   }
 
   private async think(step: StepSchema, context: string): Promise<boolean> {
@@ -102,7 +101,7 @@ export abstract class ToolCall {
   }
   abstract executeTool(toolCall: ToolCallResponse, tool: ToolBase): Promise<CallToolResult>;
 
-  private sanitizeResult(result: CallToolResult): CallToolResult {
+  private sanitizeResult(result: CallToolResult): ICallToolResult {
     if (!result || !Array.isArray(result.content)) {
       return {
         content: [
@@ -114,7 +113,17 @@ export abstract class ToolCall {
         isError: true,
       };
     }
-
+    if (result.content.length > 1) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Invalid tool result from ${this.tool.name}: Multi-result tools are not supported.`,
+          },
+        ],
+        isError: true,
+      };
+    }
     const invalidItem = result.content.find(
       (item) => item.type !== 'text' && item.type !== 'image',
     );
@@ -131,34 +140,6 @@ export abstract class ToolCall {
         isError: true,
       };
     }
-
     return result;
-  }
-
-  private async persistResult(result: CallToolResult, step: StepSchema): Promise<void> {
-    const fileName = step.result_file;
-    if (result.isError) {
-      const errorText = this.collectTextContent(result) || 'Unknown tool error';
-      await agentDb.file.create({
-        name: fileName,
-        mimeType: 'text/plain',
-        content: errorText,
-      });
-      return;
-    }
-    const textContent = this.collectTextContent(result);
-    await agentDb.file.create({
-      name: fileName,
-      mimeType: 'text/plain',
-      content: textContent,
-    });
-  }
-
-  private collectTextContent(result: CallToolResult): string {
-    return result.content
-      .filter((item) => item.type === 'text')
-      .map((item) => ('text' in item ? String(item.text ?? '') : ''))
-      .filter((text) => text.length > 0)
-      .join('\n\n');
   }
 }
