@@ -3,16 +3,24 @@ import type {
   ChatCompletionMessageParam,
   ChatCompletionTool,
 } from '@mlc-ai/web-llm/lib/openai_api_protocols/chat_completion';
-import type { ToolCallResponse, ToolContextDecision } from '../types/llm.ts';
+import type {
+  AskLLMInputBase,
+  AskLLMInputNonStreaming,
+  AskLLMInputStreaming,
+  ToolCallResponse,
+  ToolContextDecision,
+} from '../types/llm.ts';
 import { parseLLMReply } from '../utils/llmHelper.ts';
 import type { StepSchema } from '../types/planer.ts';
-import { ValueError } from './exceptions.ts';
+import { ValueError } from '../utils/exceptions.ts';
 import {
   ToolCallSystemPrompt,
   ToolCallUserPrompt,
   toolContextSystemPrompt,
   toolContextUserPrompt,
 } from './prompt.ts';
+import { ChunkIterableToReadableStream } from './utils.ts';
+
 export class LLM {
   model_id: string;
   client: MLCEngine | null = null;
@@ -52,15 +60,17 @@ export class LLM {
     this.ready = true;
   }
 
+  async askLLM(params: AskLLMInputBase | AskLLMInputNonStreaming): Promise<string>;
+  async askLLM(params: AskLLMInputStreaming): Promise<ReadableStream<string>>;
   async askLLM({
     messages,
-    stream = true,
+    stream = false,
     enableThinking = true,
   }: {
     messages: Array<ChatCompletionMessageParam>;
     stream?: boolean;
     enableThinking?: boolean;
-  }): Promise<string> {
+  }): Promise<string | ReadableStream<string>> {
     if (!this.client) {
       throw new ValueError('No available LLM client');
     }
@@ -82,18 +92,7 @@ export class LLM {
         enable_thinking: enableThinking,
       },
     });
-    const collectedMessages: string[] = [];
-    for await (const chunk of response) {
-      const chunk_message = chunk.choices[0].delta?.content || '';
-      console.log(collectedMessages.join(''));
-      collectedMessages.push(chunk_message);
-    }
-    const fullResponse = collectedMessages.join('').trim();
-    if (!fullResponse) {
-      throw new ValueError('Empty response from streaming LLM');
-    }
-    await this.unload();
-    return fullResponse;
+    return ChunkIterableToReadableStream(response, { onStop: this.unload.bind(this) });
   }
   async toolCall({
     step,

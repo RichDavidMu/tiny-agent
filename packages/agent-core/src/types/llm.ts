@@ -1,3 +1,5 @@
+import type { ChatCompletionMessageParam } from '@mlc-ai/web-llm';
+
 export interface ToolCallResponse {
   type: 'function';
   id: string;
@@ -10,4 +12,15 @@ export interface ToolCallResponse {
 export interface ToolContextDecision {
   use_context: boolean;
   files: string[];
+}
+
+export interface AskLLMInputBase {
+  messages: Array<ChatCompletionMessageParam>;
+  enableThinking?: boolean;
+}
+export interface AskLLMInputStreaming extends AskLLMInputBase {
+  streaming: true;
+}
+export interface AskLLMInputNonStreaming {
+  streaming: false;
 }
