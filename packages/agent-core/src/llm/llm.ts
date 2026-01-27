@@ -60,7 +60,8 @@ export class LLM {
       },
       { context_window_size: 32768 },
     );
-    await this.unload();
+    await this.client.unload();
+    console.log(this.model_id, 'loaded');
     this.ready = true;
   }
 
