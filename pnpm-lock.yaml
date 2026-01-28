@@ -64,6 +64,9 @@ importers:
       '@mlc-ai/web-llm':
         specifier: workspace:*
         version: link:../web-llm
+      lodash:
+        specifier: ^4.17.23
+        version: 4.17.23
       mcp-bridge-extension:
         specifier: workspace:*
         version: link:../mcp-bridge-extension
@@ -74,6 +77,9 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.25.2
         version: 1.25.2(hono@4.11.4)(zod@4.3.5)
+      '@types/lodash':
+        specifier: ^4.17.23
+        version: 4.17.23
 
   packages/mcp-bridge-extension:
     devDependencies:
@@ -5752,12 +5758,6 @@ packages:
         integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==,
       }
 
-  lodash@4.17.21:
-    resolution:
-      {
-        integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==,
-      }
-
   lodash@4.17.23:
     resolution:
       {
@@ -10218,7 +10218,7 @@ snapshots:
       graceful-fs: 4.2.11
       is-stream: 2.0.1
       lazystream: 1.0.1
-      lodash: 4.17.21
+      lodash: 4.17.23
       normalize-path: 3.0.0
       readable-stream: 4.7.0
 
@@ -11922,8 +11922,6 @@ snapshots:
   lodash.memoize@4.1.2: {}
 
   lodash.merge@4.6.2: {}
-
-  lodash@4.17.21: {}
 
   lodash@4.17.23: {}
 

@@ -1,7 +1,7 @@
 export const ToolCallSystemPrompt = (tool: string) => `
-你是一个“工具调用决策器”，你的唯一职责是：
-在【是否需要调用工具】与【直接回复用户】之间做出判断，
-并用【严格 JSON】格式输出结果。
+你是一个规划执行agent的“工具调用决策器”，你的唯一职责是：
+- 生成工具调用参数
+- 用【严格 JSON】格式输出结果。
 
 ⚠️ 你必须遵守以下规则：
 
@@ -9,14 +9,8 @@ export const ToolCallSystemPrompt = (tool: string) => `
 2. JSON 之外【不能】输出任何文字、解释、标点或空行
 3. JSON 必须可以被 JSON.parse 成功解析
 4. 所有字符串必须使用双引号
-5. 不允许使用 Markdown
 
-========================
-可选输出格式（只能二选一）
-========================
-
-【1】需要调用工具时，输出：
-
+【输出格式】
 {
   "type": "function",
   "id": "<唯一id>",
@@ -28,45 +22,39 @@ export const ToolCallSystemPrompt = (tool: string) => `
   }
 }
 
-【2】不需要调用工具时，输出：
-
-{
-  "type": "final",
-  "content": "<直接回复用户的文本>"
-}
-
-========================
-工具列表
-========================
+【当前工具】
 
 ${tool}
 
-========================
-决策原则
-========================
+【决策原则】
 
-- 如果用户的问题可以【直接用文字回答】，不要调用工具
-- 只有在【必须执行代码、计算、验证结果】时才调用工具
-- 不要为了“展示能力”而调用工具
+- 要根据【当前任务目标】、【当前工具目标】生成工具调用参数
+- 也要参考【用户问题】，不能偏离用户问题
 `;
 
-export const ToolCallUserPrompt = (input: string) => `
-用户问题：
+export const ToolCallUserPrompt = (input: string, stepGoal: string, taskGoal: string) => `
+【当前任务目标】
+${taskGoal}
+
+【当前工具目标】
+${stepGoal}
+
+【用户问题】
 ${input}
 `;
 
 export const toolContextSystemPrompt = (historyContext: string, tool: string): string => `
-你是一个工具调用前的上下文选择器。你要根据当前工具定义，以及工具任务目标。去判断是否需要读取历史工具生成的文件内容来完成当前步骤。
+你是一个工具调用前的上下文选择器。你要根据当前工具定义，以及工具任务目标。去判断是否需要读取历史工具调用结果来完成当前步骤。
 只输出严格 JSON，不要输出解释文字。
 
-【可用历史文件】
+【可用历史工具结果】
 ${historyContext}
 【工具定义】
 ${tool}
 输出格式：
 {
   "use_context": true,
-  "files": ["file-name-1", "file-name-2"]
+  "steps": ["step-id-1", "step-id-2"]
 }
 `;
 

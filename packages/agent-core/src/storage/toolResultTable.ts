@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import type { CreateToolResultInput, ToolResultRecord } from './types.ts';
 
 export class ToolResultTable {
@@ -13,14 +12,16 @@ export class ToolResultTable {
   async create(input: CreateToolResultInput): Promise<ToolResultRecord> {
     const db = await this.getDb();
     const record: ToolResultRecord = {
-      id: input.id ?? uuidv4(),
+      id: input.id,
       stepId: input.stepId,
       taskId: input.taskId,
       result: input.result,
       isError: input.isError,
       resultFile: input.resultFile,
       fileId: input.fileId,
+      stepGoal: input.stepGoal,
       createdAt: Date.now(),
+      tool: input.tool,
     };
 
     await new Promise<void>((resolve, reject) => {
@@ -43,26 +44,12 @@ export class ToolResultTable {
     });
   }
 
-  async findByStepId(stepId: string): Promise<ToolResultRecord | null> {
+  async get(id: string): Promise<ToolResultRecord | null> {
     const db = await this.getDb();
     return await new Promise<ToolResultRecord | null>((resolve, reject) => {
       const tx = db.transaction(this.storeName, 'readonly');
-      const store = tx.objectStore(this.storeName);
-      const index = store.index('stepId');
-      const request = index.get(stepId);
-      request.onsuccess = () => resolve((request.result as ToolResultRecord | undefined) || null);
-      request.onerror = () => reject(request.error);
-    });
-  }
-
-  async findByTaskId(taskId: string): Promise<ToolResultRecord | null> {
-    const db = await this.getDb();
-    return await new Promise<ToolResultRecord | null>((resolve, reject) => {
-      const tx = db.transaction(this.storeName, 'readonly');
-      const store = tx.objectStore(this.storeName);
-      const index = store.index('taskId');
-      const request = index.get(taskId);
-      request.onsuccess = () => resolve((request.result as ToolResultRecord | undefined) || null);
+      const request = tx.objectStore(this.storeName).get(id);
+      request.onsuccess = () => resolve((request.result as ToolResultRecord) || null);
       request.onerror = () => reject(request.error);
     });
   }

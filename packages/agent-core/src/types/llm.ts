@@ -11,7 +11,7 @@ export interface ToolCallResponse {
 
 export interface ToolContextDecision {
   use_context: boolean;
-  files: string[];
+  steps: string[];
 }
 
 export interface AskLLMInputBase {

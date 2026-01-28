@@ -1,14 +1,25 @@
-import { PlanAndRethink } from './planAndRethink/planer.ts';
-import { planLLM } from './llm/llm.ts';
+import { AgentController, ToolActor } from './core';
 import { MCPClientHost } from './mcp';
+import { WritingExpert } from './tools/writingExpert.ts';
+import { JavascriptExecutor } from './tools/javascriptExecutor.ts';
+import { planLLM } from './llm/llm.ts';
+import { CodeExpert } from './tools/codeExpert.ts';
 
 export class Agent {
-  llm = planLLM;
-  planer = new PlanAndRethink();
   mcpHost = new MCPClientHost();
+  llm = planLLM;
+  private readonly toolActor: ToolActor;
+  private controller: AgentController;
+
   constructor() {
+    // Initialize with built-in tools
+    const builtinTools = [new WritingExpert(), new JavascriptExecutor(), new CodeExpert()];
+    this.toolActor = new ToolActor(builtinTools);
+    this.controller = new AgentController(this.toolActor);
+
     void this.init();
   }
+
   async init(): Promise<void> {
     await this.initMcp();
   }
@@ -16,14 +27,14 @@ export class Agent {
   async initMcp(): Promise<void> {
     try {
       await this.mcpHost.addServer({ name: 'ddgs-search', url: 'https://renbaicai.site/ddgs/mcp' });
-      const tools = this.mcpHost.getToolCalls();
-      this.planer.setMCPTools(tools);
+      const mcpTools = this.mcpHost.getToolCalls();
+      this.toolActor.addTool(mcpTools);
     } catch (e) {
       console.log(e);
     }
   }
 
   async task(input: string): Promise<string> {
-    return await this.planer.generatePlan(input);
+    return await this.controller.execute(input);
   }
 }

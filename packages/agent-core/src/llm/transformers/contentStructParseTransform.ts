@@ -28,17 +28,16 @@ export function createContentStructParseTransform(): TransformStream<
     final: '</final>',
   } as const;
 
-  const ALL_TAGS = [...Object.values(openTags), ...Object.values(closeTags)];
+  const OPEN_TAGS = Object.entries(openTags);
+  const CLOSE_TAGS = closeTags;
 
-  const MAX_TAG_LEN = Math.max(...ALL_TAGS.map((t) => t.length));
-
-  function findNextOpenTag(buf: string) {
+  function findOpenTag(buf: string) {
     let best: { type: keyof typeof openTags; index: number } | null = null;
 
-    for (const type of Object.keys(openTags) as Array<keyof typeof openTags>) {
-      const i = buf.indexOf(openTags[type]);
+    for (const [type, tag] of OPEN_TAGS) {
+      const i = buf.indexOf(tag);
       if (i !== -1 && (!best || i < best.index)) {
-        best = { type, index: i };
+        best = { type: type as keyof typeof openTags, index: i };
       }
     }
     return best;
@@ -56,18 +55,10 @@ export function createContentStructParseTransform(): TransformStream<
       while (buffer.length > 0) {
         // ===== content 模式 =====
         if (mode === 'content') {
-          const next = findNextOpenTag(buffer);
+          const next = findOpenTag(buffer);
 
           if (!next) {
-            // ⚠️ 关键：只输出“安全前缀”
-            const safeLen = buffer.length - (MAX_TAG_LEN - 1);
-            if (safeLen > 0) {
-              controller.enqueue({
-                type: 'content',
-                content: buffer.slice(0, safeLen),
-              });
-              buffer = buffer.slice(safeLen);
-            }
+            // ❗不确定是不是 tag 前缀，什么都不输出
             return;
           }
 
@@ -77,25 +68,17 @@ export function createContentStructParseTransform(): TransformStream<
               content: buffer.slice(0, next.index),
             });
           }
-
           buffer = buffer.slice(next.index + openTags[next.type].length);
           mode = next.type;
           continue;
         }
 
-        // ===== plan / state / final 模式 =====
-        const closeTag = closeTags[mode];
+        // ===== plan / status / final 模式 =====
+        const closeTag = CLOSE_TAGS[mode];
         const closeIndex = buffer.indexOf(closeTag);
 
         if (closeIndex === -1) {
-          const safeLen = buffer.length - (MAX_TAG_LEN - 1);
-          if (safeLen > 0) {
-            controller.enqueue({
-              type: mode,
-              content: buffer.slice(0, safeLen),
-            });
-            buffer = buffer.slice(safeLen);
-          }
+          // ❗同样，可能是 close tag 前缀，等待更多 chunk
           return;
         }
 

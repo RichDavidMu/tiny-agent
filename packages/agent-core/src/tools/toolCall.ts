@@ -1,25 +1,39 @@
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+import type { ChatCompletionAssistantMessageParam } from '@mlc-ai/web-llm';
 import { type LLM, toolLLM } from '../llm/llm.ts';
 import { agentDb } from '../storage/db.ts';
 import type { ToolCallResponse } from '../types/llm.ts';
-import type { PlanSchema, StepSchema } from '../types/planer.ts';
+import type { PlanSchema, StepSchema, TaskSchema } from '../types/planer.ts';
 import type { ICallToolResult } from '../types/tools.ts';
 import type ToolBase from './toolBase.ts';
 
 export abstract class ToolCall {
   abstract tool: ToolBase;
 
+  needContext: boolean = false;
+
   llm: LLM = toolLLM;
 
   toolCall: ToolCallResponse | null = null;
 
-  async step(step: StepSchema, plan: PlanSchema): Promise<ICallToolResult> {
-    const toolContext = await this.buildToolCallContext(step, plan);
-    const shouldAct = await this.think(step, toolContext);
-    console.log('shouldAct\n', shouldAct, '\n', 'toolCall:\n', this.toolCall);
+  async step(step: StepSchema, task: TaskSchema, plan: PlanSchema): Promise<ICallToolResult> {
+    let toolContext: ChatCompletionAssistantMessageParam[] = [];
+    if (this.needContext) {
+      toolContext = await this.buildToolCallContext(step, plan);
+    }
+    const shouldAct = await this.think(step, task);
+    console.log(
+      'shouldAct\n',
+      shouldAct,
+      '\n',
+      'toolCall:\n',
+      this.toolCall,
+      'toolContext:\n',
+      toolContext,
+    );
     let result: CallToolResult;
     if (shouldAct) {
-      result = await this.act(this.toolCall!);
+      result = await this.act(this.toolCall!, toolContext);
     } else {
       result = {
         content: [
@@ -33,11 +47,11 @@ export abstract class ToolCall {
     return this.sanitizeResult(result);
   }
 
-  private async think(step: StepSchema, context: string): Promise<boolean> {
+  private async think(step: StepSchema, task: TaskSchema): Promise<boolean> {
     const toolCall = await this.llm.toolCall({
       step,
+      task,
       tool: this.tool.toParams(),
-      context,
     });
     if (!toolCall) {
       return false;
@@ -46,10 +60,13 @@ export abstract class ToolCall {
     return true;
   }
 
-  private async buildToolCallContext(step: StepSchema, plan: PlanSchema): Promise<string> {
-    const completedTask = plan.tasks.filter((t) => t.status === 'completed');
+  private async buildToolCallContext(
+    step: StepSchema,
+    plan: PlanSchema,
+  ): Promise<ChatCompletionAssistantMessageParam[]> {
+    const completedTask = plan.tasks.filter((t) => t.status === 'done');
     if (completedTask.length === 0) {
-      return '';
+      return [];
     }
     const historyLines = completedTask
       .map(
@@ -57,9 +74,7 @@ export abstract class ToolCall {
           `- task: ${task.task_goal}
          ${task.steps.map(
            (step) =>
-             `\n- step: ${step.step_goal}
-             - file: ${step.result_file}
-             - fileHint: ${step.result_summary_hint}\n
+             `\n- step: ${step.step_goal}\n- step_id: ${step.step_uuid}\n- result_summary_hint: ${step.result_summary_hint}\n
              `,
          )}`,
       )
@@ -69,24 +84,24 @@ export abstract class ToolCall {
       historyContext: historyLines,
       tool: this.tool.toParams(),
     });
-    if (!decision.use_context || decision.files.length === 0) {
-      return '';
+    if (!decision.use_context || decision.steps.length === 0) {
+      return [];
     }
-
-    const fileSections: string[] = [];
-    for (const fileName of decision.files) {
-      const files = await agentDb.file.findByName(fileName);
-      const file = files[files.length - 1];
-      if (!file) {
+    const toolMessage: ChatCompletionAssistantMessageParam[] = [];
+    for (const stepId of decision.steps) {
+      const step = await agentDb.toolResult.get(stepId);
+      if (!step || step.isError || !step.tool) {
         continue;
       }
-      if (!file.mimeType.startsWith('text/')) {
-        fileSections.push(`[file ${file.name} id=${file.id}] non-text content (${file.mimeType})`);
-        continue;
-      }
-      fileSections.push(`[file ${file.name} id=${file.id}]\n${this.truncate(file.content, 1200)}`);
+      toolMessage.push({
+        role: 'assistant',
+        content: `Observation:
+*${step.tool.function.name}*执行完成，得到以下结果（供当前推理使用）：
+${this.truncate(step.result, 1200)}
+`,
+      });
     }
-    return [...historyLines, ...fileSections].join('\n');
+    return toolMessage;
   }
 
   private truncate(text: string, maxLength: number): string {
@@ -96,10 +111,21 @@ export abstract class ToolCall {
     return `${text.slice(0, maxLength)}...`;
   }
 
-  private async act(toolCall: ToolCallResponse): Promise<CallToolResult> {
+  private async act(
+    toolCall: ToolCallResponse,
+    context: ChatCompletionAssistantMessageParam[],
+  ): Promise<CallToolResult> {
+    if (this.needContext) {
+      return await this.executeTool(toolCall, this.tool, context);
+    }
     return await this.executeTool(toolCall, this.tool);
   }
-  abstract executeTool(toolCall: ToolCallResponse, tool: ToolBase): Promise<CallToolResult>;
+
+  abstract executeTool(
+    toolCall: ToolCallResponse,
+    tool: ToolBase,
+    context?: ChatCompletionAssistantMessageParam[],
+  ): Promise<CallToolResult>;
 
   private sanitizeResult(result: CallToolResult): ICallToolResult {
     if (!result || !Array.isArray(result.content)) {

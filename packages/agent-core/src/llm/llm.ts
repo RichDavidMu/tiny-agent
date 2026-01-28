@@ -1,4 +1,4 @@
-import type { ChatCompletionToolMessageParam, WebWorkerMLCEngine } from '@mlc-ai/web-llm';
+import type { WebWorkerMLCEngine } from '@mlc-ai/web-llm';
 import { CreateWebWorkerMLCEngine } from '@mlc-ai/web-llm';
 import type {
   ChatCompletionMessageParam,
@@ -12,8 +12,8 @@ import type {
   ToolContextDecision,
 } from '../types/llm.ts';
 import { parseLLMReply } from '../utils/llmHelper.ts';
-import type { StepSchema } from '../types/planer.ts';
-import { ValueError } from '../utils/exceptions.ts';
+import type { StepSchema, TaskSchema } from '../types/planer.ts';
+import { ValueError } from '../core/exceptions.ts';
 import {
   ToolCallSystemPrompt,
   ToolCallUserPrompt,
@@ -27,6 +27,7 @@ export class LLM {
   client: WebWorkerMLCEngine | null = null;
   progressText: string = '';
   ready = false;
+  private config = { context_window_size: 32768 };
   constructor({ model_id = 'Qwen3-4B-q4f16_1-MLC' }: { model_id?: string } = {}) {
     this.model_id = model_id;
     void this.load();
@@ -35,7 +36,7 @@ export class LLM {
     if (!this.client) {
       throw new ValueError('No available LLM client');
     }
-    await this.client.reload(this.model_id);
+    await this.client.reload(this.model_id, this.config);
     console.log(this.model_id, ' reloaded');
   }
 
@@ -58,7 +59,7 @@ export class LLM {
           this.progressText = progress.text;
         },
       },
-      { context_window_size: 32768 },
+      this.config,
     );
     await this.client.unload();
     console.log(this.model_id, 'loaded');
@@ -100,20 +101,19 @@ export class LLM {
   }
   async toolCall({
     step,
+    task,
     tool,
-    context,
   }: {
     step: StepSchema;
+    task: TaskSchema;
     tool: ChatCompletionTool;
-    context: ChatCompletionToolMessageParam[];
   }): Promise<ToolCallResponse> {
     if (!this.client) {
       throw new ValueError('No available LLM client');
     }
     const messages: ChatCompletionMessageParam[] = [
       { role: 'system', content: ToolCallSystemPrompt(JSON.stringify(tool, null, 2)) },
-      ...context,
-      { role: 'user', content: ToolCallUserPrompt(step.step_goal) },
+      { role: 'user', content: ToolCallUserPrompt(step.step_goal, step.step_goal, task.task_goal) },
     ];
     const response = await this.client.chat.completions.create({
       messages,

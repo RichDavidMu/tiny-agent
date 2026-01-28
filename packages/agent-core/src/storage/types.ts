@@ -1,3 +1,5 @@
+import type { ChatCompletionTool } from '@mlc-ai/web-llm';
+
 export type FileRecord = {
   id: string;
   name: string;
@@ -42,22 +44,26 @@ export type CreateFileIndexInput = {
 };
 
 export type ToolResultRecord = {
-  id: string;
+  id: string; // step_uuid
   stepId: string;
+  stepGoal: string;
   taskId: string;
   result: string;
   isError: boolean;
   resultFile: string;
   fileId: string | null;
+  tool: null | ChatCompletionTool;
   createdAt: number;
 };
 
 export type CreateToolResultInput = {
-  id?: string;
+  id: string; // step_uuid
   stepId: string;
+  stepGoal: string;
   taskId: string;
   result: string;
   isError: boolean;
   resultFile: string;
   fileId: string | null;
+  tool: null | ChatCompletionTool;
 };

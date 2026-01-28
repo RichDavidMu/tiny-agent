@@ -1,0 +1,349 @@
+import { v4 as uuidv4 } from 'uuid';
+import type { PlanSchema, RethinkRes, TaskSchema } from '../types/planer.ts';
+import { type LLM, planLLM, toolLLM } from '../llm/llm.ts';
+import { createThinkingContentTransform } from '../llm/transformers/thinkingContentTransform.ts';
+import {
+  type StructuredChunk,
+  createContentStructParseTransform,
+} from '../llm/transformers/contentStructParseTransform.ts';
+import { persistResult } from '../storage/persistResult.ts';
+import { agentDb } from '../storage/db.ts';
+import {
+  PlanSystemPrompt,
+  PlanUserPrompt,
+  RethinkSystemPrompt,
+  RethinkUserPrompt,
+} from './prompt.ts';
+import { AgentState, type StateContext } from './types.ts';
+import type { ToolActor } from './toolActor.ts';
+import { type IPolicy, Policy } from './policy.ts';
+import { StateMachine } from './stateMachine.ts';
+import { EmptyPlan, ValueError } from './exceptions.ts';
+
+/**
+ * Agent Controller - orchestrates state machine, policy, and tool actor
+ */
+export class AgentController {
+  private stateMachine: StateMachine;
+  private policy: IPolicy;
+  private toolActor: ToolActor;
+  private llm: LLM;
+
+  constructor(toolActor: ToolActor) {
+    this.toolActor = toolActor;
+    this.policy = new Policy();
+    this.llm = planLLM;
+
+    // Initialize state machine
+    const initialContext: StateContext = {
+      state: AgentState.IDLE,
+      plan: null,
+      currentTask: null,
+      currentStep: null,
+      userInput: '',
+      rethinkRounds: 0,
+    };
+    this.stateMachine = new StateMachine(initialContext);
+  }
+
+  /**
+   * Execute a task
+   */
+  async execute(input: string): Promise<string> {
+    this.stateMachine.reset(input);
+    while (true) {
+      const context = this.stateMachine.getContext();
+      const decision = await this.policy.decide(context);
+      console.log(`Decision: ${decision.action}, Next State: ${decision.nextState}`);
+      // Transition to next state
+      this.stateMachine.transition(decision.nextState);
+
+      // Execute action based on decision
+      if (decision.action === 'plan') {
+        await this.handlePlanning();
+      } else if (decision.action === 'execute_step') {
+        await this.handleExecution();
+      } else if (decision.action === 'rethink') {
+        await this.handleRethinking();
+      } else if (decision.action === 'done') {
+        break;
+      }
+      // Check for terminal states
+      if (context.state === AgentState.DONE || context.state === AgentState.ERROR) {
+        break;
+      }
+    }
+
+    const finalContext = this.stateMachine.getContext();
+    if (finalContext.state === AgentState.ERROR) {
+      return finalContext.error?.message || 'agent task failed';
+    }
+    return finalContext.finalAnswer || 'Task completed';
+  }
+
+  /**
+   * Handle planning phase
+   */
+  private async handlePlanning(): Promise<void> {
+    const context = this.stateMachine.getContext();
+    const availableTools = this.toolActor.getToolDescriptions();
+
+    await this.llm.reload();
+    const textStream = await this.llm.askLLM({
+      messages: [
+        { role: 'system', content: PlanSystemPrompt },
+        {
+          role: 'user',
+          content: PlanUserPrompt(context.userInput, availableTools),
+        },
+      ],
+      stream: true,
+    });
+    const parsedStream = textStream
+      .pipeThrough(createThinkingContentTransform())
+      .pipeThrough(createContentStructParseTransform());
+    let planText = '';
+    let thinking = '';
+    const reader = parsedStream.getReader();
+    let chunk: ReadableStreamReadResult<StructuredChunk>;
+    while (!(chunk = await reader.read()).done) {
+      if (chunk.value.type === 'thinking') {
+        thinking += chunk.value.content;
+      }
+      if (chunk.value.type === 'plan') {
+        planText += chunk.value.content;
+      }
+    }
+    await this.llm.unload();
+    if (!planText) {
+      this.stateMachine.updateContext({ error: new EmptyPlan('Failed to generate plan') });
+      return;
+    }
+    console.log(`thinking:\n${thinking}\nplan:\n${planText}`);
+    const plan: PlanSchema = JSON.parse(planText);
+    this.attachIds(plan);
+
+    // Find first pending task
+    const firstTask = plan.tasks.find((t) => t.status !== 'done');
+    this.stateMachine.updateContext({
+      plan,
+      currentTask: firstTask || null,
+    });
+  }
+
+  /**
+   * Handle execution phase
+   */
+  private async handleExecution(): Promise<void> {
+    const context = this.stateMachine.getContext();
+    if (!context.plan || !context.currentTask) {
+      this.stateMachine.updateContext({ error: new EmptyPlan('No plan or task to execute') });
+      return;
+    }
+
+    // Find next pending step
+    const nextStep = context.currentTask.steps.find((s) => s.status !== AgentState.DONE);
+
+    if (!nextStep) {
+      return;
+    }
+
+    // Execute the step
+    await toolLLM.reload();
+
+    const { result, tool } = await this.toolActor.execute({
+      step: nextStep,
+      task: context.currentTask,
+      plan: context.plan,
+    });
+    console.log('Tool execution result:', result);
+    await toolLLM.unload();
+    nextStep.result_file_id = uuidv4();
+    await persistResult(result, nextStep, context.currentTask.task_uuid, tool);
+    // Update context with current step
+    nextStep.status = result.isError ? 'error' : 'done';
+    if (context.currentTask.steps.every((s) => s.status !== 'pending')) {
+      context.currentTask.status = 'done';
+    }
+    this.stateMachine.updateContext({
+      currentStep: nextStep,
+    });
+  }
+
+  /**
+   * Handle rethinking phase
+   */
+  private async handleRethinking(): Promise<void> {
+    const context = this.stateMachine.getContext();
+    if (!context.plan || !context.currentTask) {
+      return;
+    }
+
+    const toolMemo = await this.buildToolMemo();
+    await this.llm.reload();
+    const textStream = await this.llm.askLLM({
+      messages: [
+        { role: 'system', content: RethinkSystemPrompt },
+        {
+          role: 'user',
+          content: RethinkUserPrompt({
+            userGoal: context.userInput,
+            currentTask: JSON.stringify(context.currentTask, null, 2),
+            toolResult: toolMemo,
+            plan: JSON.stringify(context.plan, null, 2),
+          }),
+        },
+      ],
+      stream: true,
+    });
+
+    const parsedStream = textStream
+      .pipeThrough(createThinkingContentTransform())
+      .pipeThrough(createContentStructParseTransform());
+    let planText = '';
+    let finalText = '';
+    let status = '';
+    let thinking = '';
+    const reader = parsedStream.getReader();
+    let chunk: ReadableStreamReadResult<StructuredChunk>;
+    while (!(chunk = await reader.read()).done) {
+      if (chunk.value.type === 'thinking') {
+        thinking += chunk.value.content;
+      }
+      if (chunk.value.type === 'plan') {
+        planText += chunk.value.content;
+      }
+      if (chunk.value.type === 'final') {
+        finalText += chunk.value.content;
+      }
+      if (chunk.value.type === 'status') {
+        status = chunk.value.content;
+      }
+    }
+
+    await this.llm.unload();
+    console.log(
+      `thinking:\n${thinking}\nplan:\n${planText}\n final:\n${finalText}\n status:${status}`,
+    );
+    const rethinkResult = this.parseRethinkResult(status.trim(), finalText, planText);
+
+    // Update context based on rethink result
+    if (rethinkResult.status === 'done') {
+      this.stateMachine.updateContext({
+        finalAnswer: rethinkResult.finalAnswer,
+      });
+    } else if (rethinkResult.status === 'changed') {
+      const newPlan = this.reconcilePlan(context.plan, rethinkResult.plan);
+      const nextTask = newPlan.tasks.find((t) => t.status !== 'done');
+      this.stateMachine.updateContext({
+        plan: newPlan,
+        currentTask: nextTask || null,
+        rethinkRounds: context.rethinkRounds + 1,
+      });
+    } else {
+      // Continue with next task
+      const nextTask = context.plan.tasks.find((t) => t.status !== 'done');
+      this.stateMachine.updateContext({
+        currentTask: nextTask || null,
+        rethinkRounds: context.rethinkRounds + 1,
+      });
+    }
+  }
+
+  private async buildToolMemo(): Promise<string> {
+    const curTask = this.stateMachine.getContext().currentTask;
+    if (!curTask) {
+      return 'No tool result memory';
+    }
+    let toolMemo = '';
+    for (const step of curTask.steps) {
+      const result = await agentDb.toolResult.get(step.step_uuid);
+      if (!result) {
+        continue;
+      }
+      toolMemo += `- step_id:${result.stepId}\n- step_goal: ${result.stepGoal}\n - result:\n${result.result}\n\n -file_id: ${result.fileId}`;
+    }
+    if (!toolMemo) {
+      return 'No tool result memory';
+    }
+    return toolMemo;
+  }
+
+  /**
+   * Parse rethink result
+   */
+  private parseRethinkResult(status: string, finalText: string, planText: string): RethinkRes {
+    switch (status) {
+      case 'continue':
+        return { status };
+      case 'done':
+        return { status, finalAnswer: finalText };
+      case 'changed':
+        return { status, plan: JSON.parse(planText) };
+      default:
+        throw new ValueError('Unknown status from rethink: ' + status);
+    }
+  }
+
+  /**
+   * Attach UUIDs to plan
+   */
+  private attachIds(plan: PlanSchema): void {
+    for (const task of plan.tasks) {
+      task.task_uuid = uuidv4();
+      task.status = task.status ?? 'pending';
+      for (const step of task.steps) {
+        step.step_uuid = uuidv4();
+        step.status = step.status ?? 'pending';
+        step.result_file_id = null;
+      }
+    }
+  }
+
+  /**
+   * Reconcile plan with incoming changes
+   */
+  private reconcilePlan(current: PlanSchema, incoming: PlanSchema): PlanSchema {
+    const taskMap = new Map(
+      current.tasks.filter((task) => task.task_uuid).map((task) => [task.task_uuid!, task]),
+    );
+
+    const mergedTasks = incoming.tasks.map((incomingTask) => {
+      const existingTask = incomingTask.task_uuid ? taskMap.get(incomingTask.task_uuid) : undefined;
+      const task: TaskSchema = {
+        ...incomingTask,
+        task_uuid: existingTask?.task_uuid ?? incomingTask.task_uuid ?? uuidv4(),
+        status: incomingTask.status ?? 'pending',
+      };
+
+      if (existingTask?.status === 'done') {
+        task.status = 'done';
+      }
+
+      const stepMap = new Map(
+        (existingTask?.steps ?? [])
+          .filter((step) => step.step_uuid)
+          .map((step) => [step.step_uuid!, step]),
+      );
+
+      task.steps = incomingTask.steps.map((incomingStep) => {
+        const existingStep = incomingStep.step_uuid
+          ? stepMap.get(incomingStep.step_uuid)
+          : undefined;
+        const step = {
+          ...incomingStep,
+          step_uuid: existingStep?.step_uuid ?? incomingStep.step_uuid ?? uuidv4(),
+          status: incomingStep.status ?? 'pending',
+        };
+        if (existingStep?.status === 'done') {
+          step.status = 'done';
+        }
+        return step;
+      });
+
+      return task;
+    });
+
+    return { tasks: mergedTasks };
+  }
+}
