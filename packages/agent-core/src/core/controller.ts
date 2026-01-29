@@ -146,20 +146,19 @@ export class AgentController {
 
     // Execute the step
     await toolLLM.reload();
-
     const { result, tool } = await this.toolActor.execute({
       step: nextStep,
       task: context.currentTask,
       plan: context.plan,
     });
     console.log('Tool execution result:', result);
-    await toolLLM.unload();
     nextStep.result_file_id = uuidv4();
     await persistResult(result, nextStep, context.currentTask.task_uuid, tool);
     // Update context with current step
     nextStep.status = result.isError ? 'error' : 'done';
     if (context.currentTask.steps.every((s) => s.status !== 'pending')) {
       context.currentTask.status = 'done';
+      await toolLLM.unload();
     }
     this.stateMachine.updateContext({
       currentStep: nextStep,
