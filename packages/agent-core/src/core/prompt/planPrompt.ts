@@ -46,7 +46,6 @@ ${tools}
 - 只输出必要的结构信息
 - 使用简短、指令式描述
 - 不输出解释性文字
-- result_file 使用有总结性的文件名，便于后续按需加载上下文，不要生成文件后缀名。
 - result_summary_hint 用于提示该步骤结果摘要应该包含的关键信息
 - task_uuid 和 step_uuid 必须输出（系统会覆盖为有效 UUID）
 - status 必须输出，仅允许 "pending"
@@ -68,7 +67,7 @@ ${tools}
           "step_goal": "...",
           "status": "pending",
           "tool_name": "...",
-          "result_file": "...",
+          "result_file_name": "...",
           "result_summary_hint": "..."
         }
       ]

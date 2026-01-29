@@ -14,7 +14,7 @@ export interface StepSchema {
   step_goal: string;
   status: 'pending' | 'done' | 'error';
   tool_name: string;
-  result_file: string;
+  result_file_name: string;
   result_summary_hint: string;
   result_file_id: string | null;
 }

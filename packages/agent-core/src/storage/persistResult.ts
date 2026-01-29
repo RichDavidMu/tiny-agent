@@ -14,7 +14,7 @@ export async function persistResult(
   taskId: string,
   tool: ChatCompletionTool | null,
 ): Promise<void> {
-  const fileName = step.result_file;
+  const fileName = step.result_file_name;
   const content = result.content[0];
   const isError = result.isError || false;
 
@@ -60,7 +60,7 @@ export async function persistResult(
     result: resultText,
     isError: isError,
     stepGoal: step.step_goal,
-    resultFile: step.result_file,
+    resultFile: step.result_file_name,
     fileId: step.result_file_id,
     tool,
   });
