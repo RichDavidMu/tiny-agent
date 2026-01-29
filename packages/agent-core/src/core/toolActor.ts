@@ -19,6 +19,20 @@ export class ToolActor {
     this.tools = this.tools.concat(tools);
   }
 
+  enableTool(name: string): void {
+    const target = this.tools.find((t) => t.tool.name === name);
+    if (target) {
+      target.tool.toolChoice = 'auto';
+    }
+  }
+
+  disableTool(name: string): void {
+    const target = this.tools.find((t) => t.tool.name === name);
+    if (target) {
+      target.tool.toolChoice = 'none';
+    }
+  }
+
   /**
    * Get available tools
    */
@@ -77,8 +91,9 @@ export class ToolActor {
    * Get tool descriptions for planning
    */
   getToolDescriptions(): string {
-    const list = this.tools.map((t) => `- ${t.tool.name}`).join('\n');
-    const desc = this.tools
+    const enabledTools = this.tools.filter((t) => t.tool.toolChoice === 'auto');
+    const list = enabledTools.map((t) => `- ${t.tool.name}`).join('\n');
+    const desc = enabledTools
       .map((t) => `- tool_name: ${t.tool.name}\n- tool_description: \n${t.tool.description}`)
       .join('\n\n');
     return `可用tool_name\n${list}\n\n详细工具描述：\n${desc}`;

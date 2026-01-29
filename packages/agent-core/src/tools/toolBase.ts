@@ -6,6 +6,8 @@ export default abstract class ToolBase {
     return this.schema.name;
   }
 
+  toolChoice: 'none' | 'auto' = 'auto';
+
   get description(): string {
     return this.schema.description || '';
   }
