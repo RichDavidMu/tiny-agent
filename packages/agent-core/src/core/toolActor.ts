@@ -1,6 +1,6 @@
 import type { ICallToolResult } from '../types/tools.ts';
 import type { ToolCall } from '../tools/toolCall.ts';
-import type { ToolExecutionContext, ToolExecutionResult } from './types.ts';
+import type { ToolExecutionContext, ToolExecutionResult } from '../types/fsm.ts';
 
 /**
  * Tool Actor - executes tools and manages tool lifecycle

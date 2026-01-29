@@ -8,17 +8,13 @@ import {
 } from '../llm/transformers/contentStructParseTransform.ts';
 import { persistResult } from '../storage/persistResult.ts';
 import { agentDb } from '../storage/db.ts';
-import {
-  PlanSystemPrompt,
-  PlanUserPrompt,
-  RethinkSystemPrompt,
-  RethinkUserPrompt,
-} from './prompt.ts';
-import { AgentState, type StateContext } from './types.ts';
+import { AgentState, type StateContext } from '../types/fsm.ts';
+import { PlanSystemPrompt, PlanUserPrompt } from './prompt/planPrompt.ts';
 import type { ToolActor } from './toolActor.ts';
 import { type IPolicy, Policy } from './policy.ts';
 import { StateMachine } from './stateMachine.ts';
 import { EmptyPlan, ValueError } from './exceptions.ts';
+import { RethinkSystemPrompt, RethinkUserPrompt } from './prompt/rethinkPrompt.ts';
 
 /**
  * Agent Controller - orchestrates state machine, policy, and tool actor

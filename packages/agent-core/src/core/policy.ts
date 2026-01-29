@@ -1,5 +1,5 @@
 import { cloneDeep } from 'lodash';
-import { AgentState, type PolicyDecision, type StateContext } from './types.ts';
+import { AgentState, type PolicyDecision, type StateContext } from '../types/fsm.ts';
 
 /**
  * Policy interface - decides what to do next based on current state

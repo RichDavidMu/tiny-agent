@@ -1,4 +1,4 @@
-import { AgentState, type StateContext } from './types.ts';
+import { AgentState, type StateContext } from '../types/fsm.ts';
 
 /**
  * State machine for agent execution

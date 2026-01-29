@@ -1,6 +1,6 @@
 import type { ChatCompletionTool } from '@mlc-ai/web-llm';
-import type { ICallToolResult } from '../types/tools.ts';
-import type { PlanSchema, StepSchema, TaskSchema } from '../types/planer.ts';
+import type { ICallToolResult } from './tools.ts';
+import type { PlanSchema, StepSchema, TaskSchema } from './planer.ts';
 
 /**
  * Agent execution states
