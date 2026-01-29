@@ -31,7 +31,7 @@ export class Policy implements IPolicy {
         if (!context.currentTask) {
           return { nextState: AgentState.ERROR };
         }
-        const nextStep = context.currentTask.steps.find((s) => s.status !== 'done');
+        const nextStep = context.currentTask.steps.find((s) => s.status !== 'pending');
         if (nextStep) {
           return { nextState: AgentState.EXECUTING, action: 'execute_step' };
         }

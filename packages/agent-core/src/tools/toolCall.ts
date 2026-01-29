@@ -69,15 +69,15 @@ export abstract class ToolCall {
       return [];
     }
     const historyLines = completedTask
-      .map(
-        (task) =>
-          `- task: ${task.task_goal}
-         ${task.steps.map(
-           (step) =>
-             `\n- step: ${step.step_goal}\n- step_id: ${step.step_uuid}\n- result_summary_hint: ${step.result_summary_hint}\n
-             `,
-         )}`,
-      )
+      .map((task) => {
+        const stepsText = task.steps
+          .map(
+            (step) =>
+              `- step: ${step.step_goal}\n- step_id: ${step.step_uuid}\n- result_summary_hint: ${step.result_summary_hint}`,
+          )
+          .join('\n');
+        return `- task: ${task.task_goal}\n${stepsText}`;
+      })
       .join('\n');
     const decision = await this.llm.toolContext({
       step,
