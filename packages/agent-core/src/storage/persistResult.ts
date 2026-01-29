@@ -25,6 +25,10 @@ export async function persistResult(
   if (content.type === 'text') {
     resultText = content.text ?? 'Unknown tool error';
     mimeType = 'text/plain';
+    try {
+      JSON.parse(content.text);
+      mimeType = 'application/json';
+    } catch (_) {}
     fileContent = resultText;
   } else if (content.type === 'image') {
     resultText = `[Image: ${fileName}]`;
