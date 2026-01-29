@@ -3,7 +3,7 @@ export const RethinkSystemPrompt = `
 
 【下一轮agent以下几种行为（status）】
 - 当前工具调用返回结果满足当前轮的task预期，则可以继续执行下一轮任务执行(continue)。
-- 当前工具调用返回结果不满足当前子任务执行条件，则需要修改当前轮任务规划(changed)。
+- 当前工具调用返回结果不满足当前子任务执行条件，则需要修改后续任务规划(changed)。
 - 如果所有任务都执行完成，则根据历史轮任务结果生成汇报内容(done)。
 
 【输出协议】
@@ -72,7 +72,7 @@ ${plan}
 - 仅status为changed是才输出
 - 必须为严格的JSON
 - 必须提供完整 plan 结构
-- 不需要修改的任务的 task_uuid 不能修改，不需要修改的 step 的 step_uuid 不能修改
+- 已执行的任务不需要输出，只需要输出重新规划好的后续任务。
 </plan>
 <final>
 - 仅status为done时才输出

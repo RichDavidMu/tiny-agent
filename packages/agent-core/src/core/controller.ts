@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { PlanSchema, RethinkRes, TaskSchema } from '../types/planer.ts';
+import type { PlanSchema, RethinkRes } from '../types/planer.ts';
 import { type LLM, planLLM, toolLLM } from '../llm/llm.ts';
 import { createThinkingContentTransform } from '../llm/transformers/thinkingContentTransform.ts';
 import {
@@ -120,7 +120,7 @@ export class AgentController {
     this.attachIds(plan);
 
     // Find first pending task
-    const firstTask = plan.tasks.find((t) => t.status !== 'done');
+    const firstTask = plan.tasks.find((t) => t.status === 'pending');
     this.stateMachine.updateContext({
       plan,
       currentTask: firstTask || null,
@@ -139,7 +139,6 @@ export class AgentController {
 
     // Find next pending step
     const nextStep = context.currentTask.steps.find((s) => s.status === 'pending');
-
     if (!nextStep) {
       return;
     }
@@ -156,11 +155,10 @@ export class AgentController {
     await persistResult(result, nextStep, context.currentTask.task_uuid, tool);
     // Update context with current step
     nextStep.status = result.isError ? 'error' : 'done';
-    if (result.isError) {
-      context.currentTask.status = 'error';
-    }
     if (context.currentTask.steps.every((s) => s.status !== 'pending')) {
-      if (context.currentTask.status === 'pending') {
+      if (context.currentTask.steps.find((s) => s.status === 'error')) {
+        context.currentTask.status = 'error';
+      } else {
         context.currentTask.status = 'done';
       }
       await toolLLM.unload();
@@ -234,7 +232,7 @@ export class AgentController {
       });
     } else if (rethinkResult.status === 'changed') {
       const newPlan = this.reconcilePlan(context.plan, rethinkResult.plan);
-      const nextTask = newPlan.tasks.find((t) => t.status !== 'done');
+      const nextTask = newPlan.tasks.find((t) => t.status === 'pending');
       this.stateMachine.updateContext({
         plan: newPlan,
         currentTask: nextTask || null,
@@ -242,7 +240,7 @@ export class AgentController {
       });
     } else {
       // Continue with next task
-      const nextTask = context.plan.tasks.find((t) => t.status !== 'done');
+      const nextTask = context.plan.tasks.find((t) => t.status === 'pending');
       this.stateMachine.updateContext({
         currentTask: nextTask || null,
         rethinkRounds: context.rethinkRounds + 1,
@@ -304,46 +302,8 @@ export class AgentController {
    * Reconcile plan with incoming changes
    */
   private reconcilePlan(current: PlanSchema, incoming: PlanSchema): PlanSchema {
-    const taskMap = new Map(
-      current.tasks.filter((task) => task.task_uuid).map((task) => [task.task_uuid!, task]),
-    );
-
-    const mergedTasks = incoming.tasks.map((incomingTask) => {
-      const existingTask = incomingTask.task_uuid ? taskMap.get(incomingTask.task_uuid) : undefined;
-      const task: TaskSchema = {
-        ...incomingTask,
-        task_uuid: existingTask?.task_uuid ?? incomingTask.task_uuid ?? uuidv4(),
-        status: incomingTask.status ?? 'pending',
-      };
-
-      if (existingTask?.status === 'done') {
-        task.status = 'done';
-      }
-
-      const stepMap = new Map(
-        (existingTask?.steps ?? [])
-          .filter((step) => step.step_uuid)
-          .map((step) => [step.step_uuid!, step]),
-      );
-
-      task.steps = incomingTask.steps.map((incomingStep) => {
-        const existingStep = incomingStep.step_uuid
-          ? stepMap.get(incomingStep.step_uuid)
-          : undefined;
-        const step = {
-          ...incomingStep,
-          step_uuid: existingStep?.step_uuid ?? incomingStep.step_uuid ?? uuidv4(),
-          status: incomingStep.status ?? 'pending',
-        };
-        if (existingStep?.status === 'done') {
-          step.status = 'done';
-        }
-        return step;
-      });
-
-      return task;
-    });
-
-    return { tasks: mergedTasks };
+    const executedPlan = current.tasks.filter((t) => t.status !== 'pending');
+    this.attachIds(incoming);
+    return { tasks: [...executedPlan, ...incoming.tasks] };
   }
 }

@@ -31,7 +31,7 @@ export class Policy implements IPolicy {
         if (!context.currentTask) {
           return { nextState: AgentState.ERROR };
         }
-        const nextStep = context.currentTask.steps.find((s) => s.status !== 'pending');
+        const nextStep = context.currentTask.steps.find((s) => s.status === 'pending');
         if (nextStep) {
           return { nextState: AgentState.EXECUTING, action: 'execute_step' };
         }
@@ -47,7 +47,7 @@ export class Policy implements IPolicy {
           return { nextState: AgentState.DONE };
         }
         // Find next pending task
-        const nextTask = context.plan?.tasks.find((t) => t.status !== 'done');
+        const nextTask = context.plan?.tasks.find((t) => t.status === 'pending');
         if (nextTask) {
           return { nextState: AgentState.EXECUTING, action: 'execute_step' };
         }
