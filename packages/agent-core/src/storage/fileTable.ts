@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import type { CreateFileInput, FileRecord } from './types.ts';
 
 export class FileTable {
@@ -13,7 +12,7 @@ export class FileTable {
   async create(input: CreateFileInput): Promise<FileRecord> {
     const db = await this.getDb();
     const record: FileRecord = {
-      id: input.id ?? uuidv4(),
+      id: input.id,
       name: input.name,
       mimeType: input.mimeType,
       content: input.content,
@@ -45,18 +44,6 @@ export class FileTable {
     return await new Promise<FileRecord[]>((resolve, reject) => {
       const tx = db.transaction(this.storeName, 'readonly');
       const request = tx.objectStore(this.storeName).getAll();
-      request.onsuccess = () => resolve(request.result as FileRecord[]);
-      request.onerror = () => reject(request.error);
-    });
-  }
-
-  async findByName(name: string): Promise<FileRecord[]> {
-    const db = await this.getDb();
-    return await new Promise<FileRecord[]>((resolve, reject) => {
-      const tx = db.transaction(this.storeName, 'readonly');
-      const store = tx.objectStore(this.storeName);
-      const index = store.index('name');
-      const request = index.getAll(name);
       request.onsuccess = () => resolve(request.result as FileRecord[]);
       request.onerror = () => reject(request.error);
     });

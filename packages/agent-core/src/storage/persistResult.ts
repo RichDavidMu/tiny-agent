@@ -19,38 +19,36 @@ export async function persistResult(
   const isError = result.isError || false;
 
   let resultText: string;
-  // let mimeType: string;
-  // let fileContent: string;
+  let mimeType: string;
+  let fileContent: string;
 
   if (content.type === 'text') {
     resultText = content.text ?? 'Unknown tool error';
-    // mimeType = 'text/plain';
-    // fileContent = resultText;
+    mimeType = 'text/plain';
+    fileContent = resultText;
   } else if (content.type === 'image') {
     resultText = `[Image: ${fileName}]`;
-    // mimeType = content.mimeType ?? 'image/png';
-    // fileContent = content.data;
+    mimeType = content.mimeType ?? 'image/png';
+    fileContent = content.data;
   } else {
     resultText = 'Unknown tool error';
-    // mimeType = 'text/plain';
-    // fileContent = resultText;
+    mimeType = 'text/plain';
+    fileContent = resultText;
   }
 
-  // let fileId: string | null = null;
-  //
-  // // Only save file if execution was successful
-  // if (!isError) {
-  //   try {
-  //     const fileRecord = await agentDb.file.create({
-  //       name: fileName,
-  //       mimeType: mimeType,
-  //       content: fileContent,
-  //     });
-  //     fileId = fileRecord.id;
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  // }
+  // Only save file if execution was successful
+  if (!isError) {
+    try {
+      await agentDb.file.create({
+        id: step.result_file_id!,
+        name: fileName,
+        mimeType: mimeType,
+        content: fileContent,
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  }
 
   // Always record to toolResult table
   await agentDb.toolResult.create({
@@ -61,7 +59,7 @@ export async function persistResult(
     isError: isError,
     stepGoal: step.step_goal,
     resultFile: step.result_file_name,
-    fileId: step.result_file_id,
+    fileId: step.result_file_id!,
     tool,
   });
 }

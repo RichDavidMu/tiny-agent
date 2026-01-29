@@ -152,7 +152,7 @@ export class AgentController {
       plan: context.plan,
     });
     console.log('Tool execution result:', result);
-    nextStep.result_file_id = uuidv4();
+    nextStep.result_file_id = `file-${uuidv4()}`;
     await persistResult(result, nextStep, context.currentTask.task_uuid, tool);
     // Update context with current step
     nextStep.status = result.isError ? 'error' : 'done';
