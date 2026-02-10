@@ -2,10 +2,10 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import {
   type ContentBlockDelta,
   type ContentBlockStart,
+  type ContentBlockTaskStatusDelta,
+  type ContentBlockTaskToolResultDelta,
+  type ContentBlockTaskToolUseDelta,
   type ContentBlockTextDelta,
-  type ContentBlockToolResultDelta,
-  type ContentBlockToolResultStart,
-  type ContentBlockToolUseDelta,
   type MessageStart,
   service,
 } from 'agent-core';
@@ -14,7 +14,6 @@ import tree from '@/stream/tree.ts';
 import { type ContentNode, Node, TextNode } from '@/stream/node';
 import { ThinkNode } from '@/stream/node/contentNodes/thinkNode';
 import { TaskNode } from '@/stream/node/contentNodes/taskNode';
-import { ToolNode } from '@/stream/node/contentNodes/toolNode';
 
 class Stream {
   loading = false;
@@ -78,20 +77,6 @@ class Stream {
         newContentNode = new TextNode();
         break;
       }
-      case 'tool_use': {
-        newContentNode = new ToolNode();
-        break;
-      }
-      case 'tool_result': {
-        const target = tree.currentNode.content.find(
-          (c) =>
-            c.type === 'tool_use' &&
-            c.toolCallId === (chunk as ContentBlockToolResultStart).content_block.toolUseId,
-        );
-        if (target) {
-          (target as ToolNode).update(chunk as ContentBlockToolResultStart);
-        }
-      }
     }
     if (!newContentNode) {
       return;
@@ -113,13 +98,6 @@ class Stream {
         contentTail.update(chunk as ContentBlockTextDelta);
         break;
       }
-      case 'task': {
-        if (contentTail.type !== 'task') {
-          throw new Error('invalidate chunk');
-        }
-        contentTail.update(chunk as ContentBlockTextDelta);
-        break;
-      }
       case 'text': {
         if (contentTail.type !== 'text') {
           throw new Error('invalidate chunk');
@@ -127,12 +105,19 @@ class Stream {
         contentTail.update(chunk as ContentBlockTextDelta);
         break;
       }
-      case 'tool_result':
-      case 'tool_use': {
-        if (contentTail.type !== 'tool_use') {
+      case 'task_status': {
+        if (contentTail.type !== 'task') {
           throw new Error('invalidate chunk');
         }
-        contentTail.update(chunk as ContentBlockToolResultDelta | ContentBlockToolUseDelta);
+        contentTail.update(chunk as ContentBlockTaskStatusDelta);
+        break;
+      }
+      case 'tool_result':
+      case 'tool_use': {
+        if (contentTail.type !== 'task') {
+          throw new Error('invalidate chunk');
+        }
+        contentTail.update(chunk as ContentBlockTaskToolUseDelta | ContentBlockTaskToolResultDelta);
         break;
       }
     }

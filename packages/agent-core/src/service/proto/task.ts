@@ -85,8 +85,6 @@ export interface StartTextContent extends ContentBase {
 
 export type DeltaTextContent = StartTextContent;
 
-export type TextContent = DeltaTextContent | StartTextContent;
-
 export interface ContentBlockTextStart extends ContentBlockStartBase {
   content_block: StartTextContent;
 }
@@ -94,6 +92,8 @@ export interface ContentBlockTextStart extends ContentBlockStartBase {
 export interface ContentBlockTextDelta extends ContentBlockDeltaBase {
   content_block: DeltaTextContent;
 }
+
+export type TextContentBlock = ContentBlockTextStart | ContentBlockTextDelta;
 
 /*
    text content end
@@ -126,12 +126,6 @@ export interface DeltaTaskContentToolResult extends ContentBase {
   content: ICallToolResult['content'];
   isError: boolean;
 }
-export type TaskContent =
-  | StartTaskContent
-  | DeltaTaskStatusContent
-  | DeltaTaskContentToolUse
-  | DeltaTaskContentToolResult;
-
 export interface ContentBlockTaskStart extends ContentBlockStartBase {
   content_block: StartTaskContent;
 }
@@ -147,6 +141,12 @@ export interface ContentBlockTaskToolUseDelta extends ContentBlockDeltaBase {
 export interface ContentBlockTaskToolResultDelta extends ContentBlockDeltaBase {
   content_block: DeltaTaskContentToolResult;
 }
+
+export type TaskContentBlock =
+  | ContentBlockTaskStart
+  | ContentBlockTaskStatusDelta
+  | ContentBlockTaskToolUseDelta
+  | ContentBlockTaskToolResultDelta;
 
 /*
   task content end
