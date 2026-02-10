@@ -182,6 +182,8 @@ export class AgentController {
       } else {
         context.currentTask.status = 'done';
       }
+      this.ctx.onTaskStatus(context.currentTask);
+      this.ctx.onContentBlockEnd();
       await llmController.toolLLM.unload();
     }
     this.stateMachine.updateContext({
