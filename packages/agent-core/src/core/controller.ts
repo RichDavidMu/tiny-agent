@@ -1,6 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { PlanSchema, RethinkRes } from '../types/planer.ts';
-import { type LLM, planLLM, toolLLM } from '../llm/llm.ts';
 import { createThinkingContentTransform } from '../llm/transformers/thinkingContentTransform.ts';
 import {
   type StructuredChunk,
@@ -9,6 +8,9 @@ import {
 import { persistResult } from '../storage/persistResult.ts';
 import { agentDb } from '../storage/db.ts';
 import { AgentState, type StateContext } from '../types/fsm.ts';
+import llmController from '../llm/llmController.ts';
+import type { TaskCtx } from '../service/handlers/task.ts';
+import type { MessageStop } from '../service/proto/agentProtocol.ts';
 import { PlanSystemPrompt, PlanUserPrompt } from './prompt/planPrompt.ts';
 import type { ToolActor } from './toolActor.ts';
 import { type IPolicy, Policy } from './policy.ts';
@@ -23,12 +25,12 @@ export class AgentController {
   private stateMachine: StateMachine;
   private policy: IPolicy;
   private toolActor: ToolActor;
-  private llm: LLM;
+  public ctx: TaskCtx;
 
-  constructor(toolActor: ToolActor) {
+  constructor(toolActor: ToolActor, ctx: TaskCtx) {
     this.toolActor = toolActor;
     this.policy = new Policy();
-    this.llm = planLLM;
+    this.ctx = ctx;
 
     // Initialize state machine
     const initialContext: StateContext = {
@@ -45,12 +47,13 @@ export class AgentController {
   /**
    * Execute a task
    */
-  async execute(input: string): Promise<string> {
-    this.stateMachine.reset(input);
+  async execute(): Promise<void> {
+    this.stateMachine.reset(this.ctx.req.input);
     while (true) {
       const context = this.stateMachine.getContext();
       const decision = await this.policy.decide(context);
       console.log(`Decision: ${decision.action}, Next State: ${decision.nextState}`);
+      this.ctx.status(decision.nextState);
       // Transition to next state
       this.stateMachine.transition(decision.nextState);
 
@@ -71,10 +74,17 @@ export class AgentController {
     }
 
     const finalContext = this.stateMachine.getContext();
+    let ans = '';
+    let stop_reason: MessageStop['message']['stop_reason'] = 'success';
     if (finalContext.state === AgentState.ERROR) {
-      return finalContext.error?.message || 'agent task failed';
+      ans = finalContext.error?.message || 'agent task failed';
+      stop_reason = 'error';
+    } else {
+      ans = finalContext.finalAnswer || 'Task completed';
     }
-    return finalContext.finalAnswer || 'Task completed';
+    this.ctx.onText(ans, 'text');
+    this.ctx.onTextEnd();
+    this.ctx.onEnd(stop_reason);
   }
 
   /**
@@ -84,8 +94,8 @@ export class AgentController {
     const context = this.stateMachine.getContext();
     const availableTools = this.toolActor.getToolDescriptions();
 
-    await this.llm.reload();
-    const textStream = await this.llm.askLLM({
+    await llmController.planLLM.reload();
+    const textStream = await llmController.planLLM.askLLM({
       messages: [
         { role: 'system', content: PlanSystemPrompt },
         {
@@ -104,13 +114,15 @@ export class AgentController {
     let chunk: ReadableStreamReadResult<StructuredChunk>;
     while (!(chunk = await reader.read()).done) {
       if (chunk.value.type === 'thinking') {
+        this.ctx.res.onText(chunk.value.content, 'thinking');
         thinking += chunk.value.content;
       }
       if (chunk.value.type === 'plan') {
         planText += chunk.value.content;
       }
     }
-    await this.llm.unload();
+    this.ctx.res.onTextEnd();
+    await llmController.planLLM.unload();
     if (!planText) {
       this.stateMachine.updateContext({ error: new EmptyPlan('Failed to generate plan') });
       return;
@@ -138,13 +150,18 @@ export class AgentController {
     }
 
     // Find next pending step
-    const nextStep = context.currentTask.steps.find((s) => s.status === 'pending');
+    const nextStepIndex = context.currentTask.steps.findIndex((s) => s.status === 'pending');
+    if (nextStepIndex === 0) {
+      this.ctx.onText(context.currentTask.task_goal, 'task');
+      this.ctx.onTextEnd();
+    }
+    const nextStep = context.currentTask.steps[nextStepIndex];
     if (!nextStep) {
       return;
     }
 
     // Execute the step
-    await toolLLM.reload();
+    await llmController.toolLLM.reload();
     const { result, tool } = await this.toolActor.execute({
       step: nextStep,
       task: context.currentTask,
@@ -161,7 +178,7 @@ export class AgentController {
       } else {
         context.currentTask.status = 'done';
       }
-      await toolLLM.unload();
+      await llmController.toolLLM.unload();
     }
     this.stateMachine.updateContext({
       currentStep: nextStep,
@@ -178,8 +195,8 @@ export class AgentController {
     }
 
     const toolMemo = await this.buildToolMemo();
-    await this.llm.reload();
-    const textStream = await this.llm.askLLM({
+    await llmController.planLLM.reload();
+    const textStream = await llmController.planLLM.askLLM({
       messages: [
         { role: 'system', content: RethinkSystemPrompt },
         {
@@ -207,6 +224,7 @@ export class AgentController {
     while (!(chunk = await reader.read()).done) {
       if (chunk.value.type === 'thinking') {
         thinking += chunk.value.content;
+        this.ctx.onText(chunk.value.content, 'thinking');
       }
       if (chunk.value.type === 'plan') {
         planText += chunk.value.content;
@@ -219,7 +237,9 @@ export class AgentController {
       }
     }
 
-    await this.llm.unload();
+    this.ctx.onTextEnd();
+
+    await llmController.planLLM.unload();
     console.log(
       `thinking:\n${thinking}\nplan:\n${planText}\n final:\n${finalText}\n status:${status}`,
     );

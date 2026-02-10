@@ -1,22 +1,31 @@
+import { remove } from 'lodash';
 import type { ICallToolResult } from '../types/tools.ts';
 import type { ToolCall } from '../tools/toolCall.ts';
 import type { ToolExecutionContext, ToolExecutionResult } from '../types/fsm.ts';
+import { WritingExpert } from '../tools/writingExpert.ts';
+import { JavascriptExecutor } from '../tools/javascriptExecutor.ts';
+import { CodeExpert } from '../tools/codeExpert.ts';
 
 /**
  * Tool Actor - executes tools and manages tool lifecycle
  */
 export class ToolActor {
-  private tools: ToolCall[];
-
-  constructor(tools: ToolCall[]) {
-    this.tools = tools;
-  }
+  private builtinTools = [new WritingExpert(), new JavascriptExecutor(), new CodeExpert()];
+  private tools: ToolCall[] = [...this.builtinTools];
 
   /**
    * add available tools
    */
-  addTool(tools: ToolCall[]): void {
+  addTools(tools: ToolCall[]): void {
     this.tools = this.tools.concat(tools);
+  }
+
+  addTool(tool: ToolCall): void {
+    this.tools.push(tool);
+  }
+
+  deleteTool(toolName: string): void {
+    remove(this.tools, (i) => i.tool.name === toolName);
   }
 
   enableTool(name: string): void {

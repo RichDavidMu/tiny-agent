@@ -1,8 +1,7 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, runInAction } from 'mobx';
 // import { toast } from 'sonner';
 // import type { ChatCompletion } from '@mlc-ai/web-llm/lib/openai_api_protocols/chat_completion';
-import { Agent } from 'agent-core';
-import { createTask } from '@/lib/async.ts';
+import { service } from 'agent-core';
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -11,7 +10,6 @@ interface ChatMessage {
 export class InputStore {
   input: string = '';
   messages: ChatMessage[] = [];
-  agent = new Agent();
   constructor() {
     makeAutoObservable(this);
   }
@@ -22,43 +20,35 @@ export class InputStore {
 
   // *handleSend(): Generator<Promise<ChatCompletion>, void, ChatCompletion> {
   async handleSend() {
-    // throw new Error('Function not implemented.');
     if (!this.input.trim() || this.loading) return;
-    const [ready, resolve] = createTask<boolean>();
-    const timer = setInterval(() => {
-      if (this.agent.llm.ready) {
-        resolve(true);
-        clearInterval(timer);
-      }
-    }, 1000);
-    await ready;
-    const plan = await this.agent.task(this.input);
-    // if (!llm.client) {
-    //   toast.error('Loading model...');
-    //   return;
-    // }
-    // const userMessage: ChatMessage = { role: 'user', content: this.input };
-    // this.messages.push(userMessage);
-    // this.input = '';
-    this.loading = true;
-    // try {
-    //   const reply = yield llm.client.chat.completions.create({
-    //     messages: this.messages,
-    //   });
-    const assistantMessage: ChatMessage = {
-      role: 'assistant',
-      content: plan,
-    };
+    const userInput = this.input;
+    this.messages.push({ role: 'user', content: userInput });
+    const assistantMessage: ChatMessage = { role: 'assistant', content: '' };
     this.messages.push(assistantMessage);
-    // } catch (error) {
-    //   toast.error('Failed to get response:' + error);
-    //   const errorMessage: ChatMessage = {
-    //     role: 'assistant',
-    //     content: 'Sorry, I encountered an error. Please try again.',
-    //   };
-    //   this.messages.push(errorMessage);
-    // } finally {
-    this.loading = false;
-    // }
+    this.input = '';
+    this.loading = true;
+
+    try {
+      const stream = await service.taskStream(userInput);
+      const reader = stream.getReader();
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        if (value) {
+          runInAction(() => {
+            assistantMessage.content += value;
+          });
+        }
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      runInAction(() => {
+        assistantMessage.content = errorMessage || 'Sorry, I encountered an error.';
+      });
+    } finally {
+      runInAction(() => {
+        this.loading = false;
+      });
+    }
   }
 }

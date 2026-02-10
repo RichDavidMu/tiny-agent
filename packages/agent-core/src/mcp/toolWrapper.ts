@@ -45,8 +45,3 @@ export class MCPToolCall extends ToolCall {
     }
   }
 }
-
-// 从 MCP 客户端创建所有工具的 ToolCall 包装器
-export function createMCPToolCalls(mcpClient: MCPClient): MCPToolCall[] {
-  return mcpClient.tools.map((tool) => new MCPToolCall(mcpClient, tool));
-}

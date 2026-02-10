@@ -1,10 +1,11 @@
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type { ChatCompletionAssistantMessageParam } from '@mlc-ai/web-llm';
-import { type LLM, toolLLM } from '../llm/llm.ts';
 import { agentDb } from '../storage/db.ts';
 import type { ToolCallResponse } from '../types/llm.ts';
 import type { PlanSchema, StepSchema, TaskSchema } from '../types/planer.ts';
 import type { ICallToolResult } from '../types/tools.ts';
+import llmController from '../llm/llmController.ts';
+import type { LLM } from '../llm/llm.ts';
 import type ToolBase from './toolBase.ts';
 
 export abstract class ToolCall {
@@ -12,7 +13,7 @@ export abstract class ToolCall {
 
   needContext: boolean = false;
 
-  llm: LLM = toolLLM;
+  llm: LLM = llmController.toolLLM;
 
   toolCall: ToolCallResponse | null = null;
 

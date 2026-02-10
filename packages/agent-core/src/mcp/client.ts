@@ -15,10 +15,10 @@ import { bridgeFetch } from './bridge.ts';
 import { MCPToolCall } from './toolWrapper.ts';
 
 export class MCPClient {
-  private serverConfig: MCPServerConfig;
+  public serverConfig: MCPServerConfig;
+  public status: 'connecting' | 'connected' | 'disconnected' | 'error' = 'disconnected';
   private options: MCPClientOptions;
   private _tools: Tool[] = [];
-  private connected: boolean = false;
   private requestId: number = 0;
   private sessionId: string | null = null;
 
@@ -28,10 +28,6 @@ export class MCPClient {
       clientName: options.clientName || 'agent-core-browser',
       clientVersion: options.clientVersion || '1.0.0',
     };
-  }
-
-  get isConnected(): boolean {
-    return this.connected;
   }
 
   get serverName(): string {
@@ -126,10 +122,10 @@ export class MCPClient {
   }
 
   async connect(): Promise<void> {
-    if (this.connected) {
+    if (this.status === 'connected') {
       return;
     }
-
+    this.status = 'connecting';
     try {
       // 发送 initialize 请求
       const initResult = await this.sendRequest<{
@@ -154,12 +150,12 @@ export class MCPClient {
       // 发送 initialized 通知
       await this.sendNotification('notifications/initialized');
 
-      this.connected = true;
+      this.status = 'connected';
 
       // 获取工具列表
       await this.refreshTools();
     } catch (error) {
-      this.connected = false;
+      this.status = 'error';
       throw new Error(
         `Failed to connect to MCP server ${this.serverConfig.name}: ${error instanceof Error ? error.message : String(error)}`,
       );
@@ -190,13 +186,13 @@ export class MCPClient {
   }
 
   async disconnect(): Promise<void> {
-    this.connected = false;
+    this.status = 'disconnected';
     this.sessionId = null;
     this._tools = [];
   }
 
   async refreshTools(): Promise<Tool[]> {
-    if (!this.connected) {
+    if (this.status !== 'connected') {
       throw new Error('MCP client is not connected');
     }
 
@@ -206,7 +202,7 @@ export class MCPClient {
   }
 
   async callTool(name: string, args: Record<string, unknown>): Promise<CallToolResult> {
-    if (!this.connected) {
+    if (this.status !== 'connected') {
       throw new Error('MCP client is not connected');
     }
 

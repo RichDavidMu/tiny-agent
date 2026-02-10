@@ -28,7 +28,7 @@ export class LLM {
   progressText: string = '';
   ready = false;
   private config = { context_window_size: 32768 };
-  constructor({ model_id = 'Qwen3-4B-q4f16_1-MLC' }: { model_id?: string } = {}) {
+  constructor({ model_id }: { model_id: string }) {
     this.model_id = model_id;
     void this.load();
   }
@@ -153,5 +153,3 @@ export class LLM {
     return JSON.parse(content) as ToolContextDecision;
   }
 }
-export const planLLM = new LLM();
-export const toolLLM = planLLM;

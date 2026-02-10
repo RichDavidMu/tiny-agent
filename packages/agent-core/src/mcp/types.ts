@@ -26,6 +26,7 @@ export interface JsonRpcResponse {
 export interface MCPServerConfig {
   name: string;
   url: string; // MCP 服务器 HTTP 端点
+  builtin?: boolean; // 是否是内建工具，不可删除
 }
 
 // MCP 客户端选项
