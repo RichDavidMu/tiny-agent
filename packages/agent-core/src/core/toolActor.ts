@@ -5,6 +5,7 @@ import type { ToolExecutionContext, ToolExecutionResult } from '../types/fsm.ts'
 import { WritingExpert } from '../tools/writingExpert.ts';
 import { JavascriptExecutor } from '../tools/javascriptExecutor.ts';
 import { CodeExpert } from '../tools/codeExpert.ts';
+import type { TaskCtx } from '../service/handlers/task.ts';
 
 /**
  * Tool Actor - executes tools and manages tool lifecycle
@@ -52,7 +53,7 @@ export class ToolActor {
   /**
    * Execute a tool for a given step
    */
-  async execute(context: ToolExecutionContext): Promise<ToolExecutionResult> {
+  async execute(ctx: TaskCtx, context: ToolExecutionContext): Promise<ToolExecutionResult> {
     const { step, plan, task } = context;
 
     // Find the tool
@@ -67,7 +68,7 @@ export class ToolActor {
     } else {
       try {
         // Execute the tool
-        result = await tool.step(step, task, plan);
+        result = await tool.step(step, task, plan, ctx);
       } catch (error) {
         // Tool execution error
         result = {

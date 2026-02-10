@@ -162,7 +162,7 @@ export class AgentController {
 
     // Execute the step
     await llmController.toolLLM.reload();
-    const { result, tool } = await this.toolActor.execute({
+    const { result, tool } = await this.toolActor.execute(this.ctx, {
       step: nextStep,
       task: context.currentTask,
       plan: context.plan,

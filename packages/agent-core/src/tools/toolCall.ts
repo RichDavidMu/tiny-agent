@@ -6,6 +6,7 @@ import type { PlanSchema, StepSchema, TaskSchema } from '../types/planer.ts';
 import type { ICallToolResult } from '../types/tools.ts';
 import llmController from '../llm/llmController.ts';
 import type { LLM } from '../llm/llm.ts';
+import type { TaskCtx } from '../service/handlers/task.ts';
 import type ToolBase from './toolBase.ts';
 
 export abstract class ToolCall {
@@ -17,7 +18,12 @@ export abstract class ToolCall {
 
   toolCall: ToolCallResponse | null = null;
 
-  async step(step: StepSchema, task: TaskSchema, plan: PlanSchema): Promise<ICallToolResult> {
+  async step(
+    step: StepSchema,
+    task: TaskSchema,
+    plan: PlanSchema,
+    ctx: TaskCtx,
+  ): Promise<ICallToolResult> {
     let toolContext: ChatCompletionAssistantMessageParam[] = [];
     if (this.needContext) {
       toolContext = await this.buildToolCallContext(step, plan);
@@ -34,7 +40,9 @@ export abstract class ToolCall {
     );
     let result: CallToolResult;
     if (shouldAct) {
+      ctx.onToolUse({ ...this.tool.toParams(), id: step.step_uuid }, this.toolCall!);
       result = await this.act(this.toolCall!, toolContext);
+      ctx.onToolResult(result, step);
     } else {
       result = {
         content: [

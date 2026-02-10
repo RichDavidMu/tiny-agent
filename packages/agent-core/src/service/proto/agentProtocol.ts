@@ -1,4 +1,5 @@
 import type { AgentState } from '../../types/fsm.ts';
+import type { ICallToolResult } from '../../types/tools.ts';
 
 export const ChunkType = {
   message_start: 'message_start',
@@ -10,6 +11,42 @@ export const ChunkType = {
 } as const;
 export const CHUNK_TYPE_VALUES = Array.from(Object.values(ChunkType));
 export type CHUNK_TYPE = (typeof ChunkType)[keyof typeof ChunkType];
+
+export const ContentBlockType = {
+  text: 'text',
+  task: 'task',
+  toolUse: 'tool_use',
+  toolResult: 'tool_result',
+  thinking: 'thinking',
+} as const;
+export const CONTENT_TYPE_VALUES = Array.from(Object.values(ContentBlockType));
+export type CONTENT_BLOCK_TYPE = (typeof ContentBlockType)[keyof typeof ContentBlockType];
+
+interface ContentBase {
+  type: CONTENT_BLOCK_TYPE;
+}
+
+export interface TextContent extends ContentBase {
+  type: 'text' | 'task' | 'thinking';
+  text: string;
+}
+
+export interface ToolUseContent extends ContentBase {
+  type: 'tool_use';
+  id: string;
+  input: Record<string, any>;
+  name: string;
+  desc: string;
+}
+
+export interface ToolResultContent extends ContentBase {
+  type: 'tool_result';
+  toolUseId: string;
+  content: ICallToolResult['content'];
+  isError: boolean;
+}
+
+export type ContentType = TextContent | ToolResultContent | ToolUseContent;
 
 interface Base {
   type: CHUNK_TYPE;
@@ -41,25 +78,18 @@ export interface ContentBlockStart extends Base {
   index: number;
   content_block: {
     start_timestamp: number;
-    type: 'text' | 'tool_call' | 'thinking' | 'task';
-    text: string;
-  };
+  } & ContentType;
 }
 export interface ContentBlockDelta extends Base {
   type: 'content_block_delta';
   index: number;
-  content_block: {
-    type: 'text' | 'tool_call' | 'thinking' | 'task';
-    text: string;
-  };
+  content_block: {} & ContentType;
 }
 
 export interface ContentBlockStop extends Base {
   type: 'content_block_stop';
   index: number;
-  content_block: {
-    stop_timestamp: number;
-  };
+  stop_timestamp: number;
 }
 
 export interface StatusBlock extends Base {

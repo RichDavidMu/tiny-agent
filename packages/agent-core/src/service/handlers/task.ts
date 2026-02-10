@@ -1,7 +1,11 @@
 import { v4 as uuid } from 'uuid';
+import type { ChatCompletionTool } from '@mlc-ai/web-llm';
 import type { AgentChunk, MessageStop, StatusBlock } from '../proto/agentProtocol.ts';
 import type { CTX } from '../proto/ctx.ts';
 import type { AgentState } from '../../types/fsm.ts';
+import type { ToolCallResponse } from '../../types/llm.ts';
+import type { StepSchema } from '../../types/planer.ts';
+import type { ICallToolResult } from '../../types/tools.ts';
 
 interface TaskReq {
   input: string;
@@ -33,6 +37,41 @@ export class TaskCtx implements CTX<TaskReq, TaskCtx> {
         parent: '0',
         content: [],
       },
+    });
+  }
+
+  public onToolResult(result: ICallToolResult, step: StepSchema): void {
+    this.write({
+      type: 'content_block_start',
+      index: 0,
+      content_block: {
+        start_timestamp: new Date().getDate(),
+        type: 'tool_result',
+        isError: !!result.isError,
+        content: result.content,
+        toolUseId: step.step_uuid,
+      },
+    });
+    this.write({ type: 'content_block_stop', index: 0, stop_timestamp: new Date().getDate() });
+  }
+
+  public onToolUse(tool: ChatCompletionTool & { id: string }, toolcall: ToolCallResponse): void {
+    this.write({
+      type: 'content_block_start',
+      index: 0,
+      content_block: {
+        start_timestamp: new Date().getDate(),
+        type: 'tool_use',
+        id: tool.id,
+        input: toolcall.function.arguments,
+        name: tool.function.name,
+        desc: tool.function.description || '',
+      },
+    });
+    this.write({
+      type: 'content_block_stop',
+      index: 0,
+      stop_timestamp: new Date().getDate(),
     });
   }
 
@@ -93,9 +132,7 @@ export class TaskCtx implements CTX<TaskReq, TaskCtx> {
     this.write({
       type: 'content_block_stop',
       index: this.latestChunk.index + 1,
-      content_block: {
-        stop_timestamp: new Date().getDate(),
-      },
+      stop_timestamp: new Date().getDate(),
     });
   }
 

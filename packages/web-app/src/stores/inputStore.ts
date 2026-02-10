@@ -35,9 +35,7 @@ export class InputStore {
         const { value, done } = await reader.read();
         if (done) break;
         if (value) {
-          runInAction(() => {
-            assistantMessage.content += value;
-          });
+          console.log(value);
         }
       }
     } catch (error) {
