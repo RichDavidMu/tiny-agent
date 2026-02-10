@@ -1,7 +1,6 @@
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 // import { toast } from 'sonner';
 // import type { ChatCompletion } from '@mlc-ai/web-llm/lib/openai_api_protocols/chat_completion';
-import { service } from 'agent-core';
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -26,27 +25,5 @@ export class InputStore {
     const assistantMessage: ChatMessage = { role: 'assistant', content: '' };
     this.messages.push(assistantMessage);
     this.input = '';
-    this.loading = true;
-
-    try {
-      const stream = await service.taskStream(userInput);
-      const reader = stream.getReader();
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        if (value) {
-          console.log(value);
-        }
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      runInAction(() => {
-        assistantMessage.content = errorMessage || 'Sorry, I encountered an error.';
-      });
-    } finally {
-      runInAction(() => {
-        this.loading = false;
-      });
-    }
   }
 }

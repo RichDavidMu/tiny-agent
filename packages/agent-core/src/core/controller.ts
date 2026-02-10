@@ -11,7 +11,7 @@ import { agentDb } from '../storage/db.ts';
 import { AgentState, type StateContext } from '../types/fsm.ts';
 import llmController from '../llm/llmController.ts';
 import type { TaskCtx } from '../service/handlers/task.ts';
-import type { MessageStop } from '../service/proto/agentProtocol.ts';
+import type { MessageStop } from '../service/proto/task.ts';
 import { PlanSystemPrompt, PlanUserPrompt } from './prompt/planPrompt.ts';
 import type { ToolActor } from './toolActor.ts';
 import { type IPolicy, Policy } from './policy.ts';

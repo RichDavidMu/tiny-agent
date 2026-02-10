@@ -1,9 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import type { ChatCompletionTool } from '@mlc-ai/web-llm';
-import type { AgentChunk, MessageStop, StatusBlock } from '../proto/agentProtocol.ts';
-import type { CTX } from '../proto/ctx.ts';
+import type { AgentChunk, CTX, MessageStop, StatusBlock } from '../proto';
 import type { AgentState } from '../../types/fsm.ts';
-import type { ToolCallResponse } from '../../types/llm.ts';
 import type { StepSchema } from '../../types/planer.ts';
 import type { ICallToolResult } from '../../types/tools.ts';
 
@@ -68,7 +66,7 @@ export class TaskCtx implements CTX<TaskReq, TaskCtx> {
       },
     });
   }
-  public onToolUseEnd(shouldAct: boolean, toolcall: ToolCallResponse | null): void {
+  public onToolUseEnd(shouldAct: boolean, toolcall: string): void {
     this.write({
       type: 'content_block_delta',
       index: 1,

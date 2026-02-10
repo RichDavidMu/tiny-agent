@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { webLogger } from '@tini-agent/utils';
 import { cn } from '@/lib/utils';
 
 export type Mode = 'typewriter' | 'fade';
@@ -208,7 +209,7 @@ function useTextStream({
 
         markComplete();
       } catch (error) {
-        console.error('Error processing text stream:', error);
+        webLogger.error('Error processing text stream:', error);
         markComplete();
         onError?.(error);
       }
@@ -316,7 +317,7 @@ function ResponseStream({
       from { opacity: 0; }
       to { opacity: 1; }
     }
-    
+
     .fade-segment {
       display: inline-block;
       opacity: 0;

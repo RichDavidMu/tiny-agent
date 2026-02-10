@@ -31,7 +31,7 @@ export abstract class ToolCall {
       toolContext = await this.buildToolCallContext(step, plan);
     }
     const shouldAct = await this.think(step, task);
-    ctx.onToolUseEnd(shouldAct, this.toolCall);
+    ctx.onToolUseEnd(shouldAct, JSON.stringify(this.toolCall || {}, undefined, 2));
     agentLogger.debug(
       'shouldAct\n',
       shouldAct,

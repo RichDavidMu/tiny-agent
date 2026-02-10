@@ -1,6 +1,12 @@
 import type { AgentState } from '../../types/fsm.ts';
 import type { ICallToolResult } from '../../types/tools.ts';
 
+export const Role = {
+  user: 'user',
+  assistant: 'assistant',
+} as const;
+export type ROLE_TYPE = (typeof Role)[keyof typeof Role];
+
 export const ChunkType = {
   message_start: 'message_start',
   message_stop: 'message_stop',
@@ -31,22 +37,12 @@ export interface TextContent extends ContentBase {
   text: string;
 }
 
-export interface ToolUseContent extends ContentBase {
-  type: 'tool_use';
-  id: string;
-  input: Record<string, any>;
-  name: string;
-  desc: string;
-}
-
 export interface ToolResultContent extends ContentBase {
   type: 'tool_result';
   toolUseId: string;
   content: ICallToolResult['content'];
   isError: boolean;
 }
-
-export type ContentType = TextContent | ToolResultContent;
 
 interface Base {
   type: CHUNK_TYPE;
@@ -85,7 +81,14 @@ export interface ContentBlockTextStart extends ContentBlockStartBase {
   type: 'content_block_start';
   content_block: {
     start_timestamp: number;
-  } & ContentType;
+  } & TextContent;
+}
+
+export interface ContentBlockToolResultStart extends ContentBlockStartBase {
+  type: 'content_block_start';
+  content_block: {
+    start_timestamp: number;
+  } & ToolResultContent;
 }
 
 export interface ContentBlockToolUseStart extends ContentBlockStartBase {
@@ -99,22 +102,34 @@ export interface ContentBlockToolUseStart extends ContentBlockStartBase {
   };
 }
 
-type ContentBlockStart = ContentBlockTextStart | ContentBlockToolUseStart;
+type ContentBlockStart =
+  | ContentBlockTextStart
+  | ContentBlockToolUseStart
+  | ContentBlockToolResultStart;
 
 export interface ContentBlockTextDelta extends ContentBlockDeltaBase {
   type: 'content_block_delta';
-  content_block: {} & ContentType;
+  content_block: {} & TextContent;
 }
+
+export interface ContentBlockToolResultDelta extends ContentBlockDeltaBase {
+  type: 'content_block_delta';
+  content_block: {} & ToolResultContent;
+}
+
 export interface ContentBlockToolUseDelta extends ContentBlockDeltaBase {
   type: 'content_block_delta';
   content_block: {
     type: 'tool_use';
-    input: Record<string, any> | null;
+    input: string;
     should_act: boolean;
   };
 }
 
-type ContentBlockDelta = ContentBlockTextDelta | ContentBlockToolUseDelta;
+type ContentBlockDelta =
+  | ContentBlockTextDelta
+  | ContentBlockToolUseDelta
+  | ContentBlockToolResultDelta;
 
 export interface ContentBlockStop extends Base {
   type: 'content_block_stop';
@@ -134,3 +149,5 @@ export type AgentChunk =
   | ContentBlockDelta
   | ContentBlockStop
   | StatusBlock;
+
+export type ContentChunk = ContentBlockStart | ContentBlockDelta | ContentBlockStop;

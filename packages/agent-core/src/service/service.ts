@@ -1,7 +1,7 @@
 import llmController from '../llm/llmController.ts';
 import { MCPClientHost } from '../mcp';
 import { AgentController, ToolActor } from '../core';
-import type { AgentChunk } from './proto/agentProtocol.ts';
+import type { AgentChunk } from './proto';
 import { TaskCtx } from './handlers/task.ts';
 
 class Service {
@@ -20,9 +20,9 @@ class Service {
     });
   }
 
-  async taskStream(input: string): Promise<ReadableStream<AgentChunk>> {
+  async taskStream(params: { input: string }): Promise<ReadableStream<AgentChunk>> {
     await this.waitForReady();
-    const ctx = new TaskCtx({ req: { input } });
+    const ctx = new TaskCtx({ req: params });
     const agent = new AgentController(this.toolActor, ctx);
     agent.execute();
     return ctx.rs;

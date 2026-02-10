@@ -1,1 +1,2 @@
-export * from './service/service.ts';
+export * from './service';
+export * from './types';
