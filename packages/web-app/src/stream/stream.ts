@@ -44,7 +44,7 @@ class Stream {
               break;
             }
             case 'content_block_stop': {
-              // do nothing
+              this.handleContentBlockStop();
               break;
             }
             case 'message_stop': {
@@ -136,6 +136,14 @@ class Stream {
         break;
       }
     }
+  }
+
+  handleContentBlockStop() {
+    const { contentTail } = tree.currentNode;
+    if (!contentTail) {
+      throw new Error('invalidate chunk');
+    }
+    contentTail.setEnd(true);
   }
 
   handleMessageStart(chunk: MessageStart) {

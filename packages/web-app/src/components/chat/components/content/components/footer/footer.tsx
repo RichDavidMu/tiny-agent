@@ -9,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button.tsx';
 import { Loader } from '@/components/ui/loader.tsx';
 import rootStore from '@/stores/rootStore.ts';
-// import llm from '@/agentCore/llm.ts';
+import stream from '@/stream/stream.ts';
 
 const Footer = observer(() => {
   const { inputStore } = rootStore;
@@ -18,7 +18,7 @@ const Footer = observer(() => {
       value={inputStore.input}
       onValueChange={(value) => inputStore.setInput(value)}
       onSubmit={() => inputStore.handleSend()}
-      disabled={inputStore.loading}
+      disabled={stream.loading}
       className="mt-4"
     >
       <PromptInputTextarea placeholder="Type your message here..." />
@@ -30,11 +30,11 @@ const Footer = observer(() => {
         >
           <Button
             size="icon"
-            // disabled={!inputStore.input.trim() || inputStore.loading || !llm.ready}
+            disabled={!inputStore.input.trim() || stream.loading}
             onClick={() => inputStore.handleSend()}
             className="h-9 w-9 rounded-full"
           >
-            {inputStore.loading ? (
+            {stream.loading ? (
               <Loader variant="circular" size="sm" className="border-primary-foreground" />
             ) : (
               <Send className="h-4 w-4" />
