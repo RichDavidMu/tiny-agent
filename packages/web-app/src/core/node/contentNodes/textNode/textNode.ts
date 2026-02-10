@@ -1,7 +1,7 @@
 import type { ContentBlockTextDelta, ContentBlockTextStart } from 'agent-core';
-import type { BaseContentNode } from '@/core/node/contentNodes/base.ts';
+import { BaseContentNode } from '@/core/node/contentNodes/base.ts';
 
-export class TextNode implements BaseContentNode {
+export class TextNode extends BaseContentNode {
   type = 'text' as const;
   text = '';
   update(chunk: ContentBlockTextStart | ContentBlockTextDelta) {

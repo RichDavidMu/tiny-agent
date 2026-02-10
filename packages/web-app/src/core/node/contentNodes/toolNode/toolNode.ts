@@ -5,9 +5,9 @@ import type {
   ContentBlockToolUseStart,
   ICallToolResult,
 } from 'agent-core';
-import type { BaseContentNode } from '@/core/node/contentNodes';
+import { BaseContentNode } from '@/core/node/contentNodes';
 
-export class ToolNode implements BaseContentNode {
+export class ToolNode extends BaseContentNode {
   type = 'tool_use' as const;
   status: 'done' | 'error' | 'pending' = 'pending';
   desc: string = '';

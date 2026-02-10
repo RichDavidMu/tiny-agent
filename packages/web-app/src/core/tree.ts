@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import { TaskNode } from '@/core/node/taskNode.ts';
+import { Node } from '@/core/node/node.ts';
 
 class Tree {
   root = Tree.createRoot();
@@ -10,8 +10,8 @@ class Tree {
   }
 
   get list() {
-    const list: TaskNode[] = [];
-    let tail: TaskNode | null = this.currentNode;
+    const list: Node[] = [];
+    let tail: Node | null = this.currentNode;
     while (tail && tail.id !== '0') {
       list.unshift(tail);
       tail = tail.parent;
@@ -19,14 +19,14 @@ class Tree {
     return list;
   }
 
-  appendNode(node: TaskNode) {
+  appendNode(node: Node) {
     this.currentNode.children = node;
     node.parent = this.currentNode;
     this.currentNode = node;
   }
 
   static createRoot() {
-    return new TaskNode({ id: '0', role: 'assistant' });
+    return new Node({ id: '0', role: 'assistant' });
   }
 
   reset() {

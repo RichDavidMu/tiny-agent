@@ -1,5 +1,4 @@
-import type { AgentState } from '../../types/fsm.ts';
-import type { ICallToolResult } from '../../types/tools.ts';
+import type { AgentState, ICallToolResult } from '../../types';
 
 export const Role = {
   user: 'user',
@@ -102,7 +101,7 @@ export interface ContentBlockToolUseStart extends ContentBlockStartBase {
   };
 }
 
-type ContentBlockStart =
+export type ContentBlockStart =
   | ContentBlockTextStart
   | ContentBlockToolUseStart
   | ContentBlockToolResultStart;
@@ -126,7 +125,7 @@ export interface ContentBlockToolUseDelta extends ContentBlockDeltaBase {
   };
 }
 
-type ContentBlockDelta =
+export type ContentBlockDelta =
   | ContentBlockTextDelta
   | ContentBlockToolUseDelta
   | ContentBlockToolResultDelta;
