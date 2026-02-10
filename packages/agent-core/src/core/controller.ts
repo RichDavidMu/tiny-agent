@@ -84,7 +84,7 @@ export class AgentController {
       ans = finalContext.finalAnswer || 'Task completed';
     }
     this.ctx.onText(ans, 'text');
-    this.ctx.onTextEnd();
+    this.ctx.onContentBlockEnd();
     this.ctx.onEnd(stop_reason);
   }
 
@@ -113,16 +113,20 @@ export class AgentController {
     let thinking = '';
     const reader = parsedStream.getReader();
     let chunk: ReadableStreamReadResult<StructuredChunk>;
+    let emitThinkingEnd = false;
     while (!(chunk = await reader.read()).done) {
       if (chunk.value.type === 'thinking') {
         this.ctx.res.onText(chunk.value.content, 'thinking');
         thinking += chunk.value.content;
       }
       if (chunk.value.type === 'plan') {
+        if (!emitThinkingEnd) {
+          this.ctx.res.onContentBlockEnd();
+          emitThinkingEnd = true;
+        }
         planText += chunk.value.content;
       }
     }
-    this.ctx.res.onTextEnd();
     await llmController.planLLM.unload();
     if (!planText) {
       this.stateMachine.updateContext({ error: new EmptyPlan('Failed to generate plan') });
@@ -153,8 +157,7 @@ export class AgentController {
     // Find next pending step
     const nextStepIndex = context.currentTask.steps.findIndex((s) => s.status === 'pending');
     if (nextStepIndex === 0) {
-      this.ctx.onText(context.currentTask.task_goal, 'task');
-      this.ctx.onTextEnd();
+      this.ctx.onTaskStart(context.currentTask);
     }
     const nextStep = context.currentTask.steps[nextStepIndex];
     if (!nextStep) {
@@ -238,7 +241,7 @@ export class AgentController {
       }
     }
 
-    this.ctx.onTextEnd();
+    this.ctx.onContentBlockEnd();
 
     await llmController.planLLM.unload();
     agentLogger.debug(

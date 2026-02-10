@@ -25,13 +25,12 @@ export abstract class ToolCall {
     plan: PlanSchema,
     ctx: TaskCtx,
   ): Promise<ICallToolResult> {
-    ctx.onToolUseStart(this.tool.toParams(), step);
     let toolContext: ChatCompletionAssistantMessageParam[] = [];
     if (this.needContext) {
       toolContext = await this.buildToolCallContext(step, plan);
     }
     const shouldAct = await this.think(step, task);
-    ctx.onToolUseEnd(shouldAct, JSON.stringify(this.toolCall || {}, undefined, 2));
+    ctx.onToolUse(step, task, shouldAct, JSON.stringify(this.toolCall || {}, undefined, 2));
     agentLogger.debug(
       'shouldAct\n',
       shouldAct,
@@ -44,7 +43,7 @@ export abstract class ToolCall {
     let result: CallToolResult;
     if (shouldAct) {
       result = await this.act(this.toolCall!, toolContext);
-      ctx.onToolResult(result, step);
+      ctx.onToolResult(result, step, task);
     } else {
       result = {
         content: [

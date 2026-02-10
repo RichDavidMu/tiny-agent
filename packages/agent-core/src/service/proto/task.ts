@@ -1,4 +1,4 @@
-import type { AgentState, ICallToolResult } from '../../types';
+import type { AgentState, ICallToolResult, TaskSchema } from '../../types';
 
 export const Role = {
   user: 'user',
@@ -20,6 +20,7 @@ export type CHUNK_TYPE = (typeof ChunkType)[keyof typeof ChunkType];
 export const ContentBlockType = {
   text: 'text',
   task: 'task',
+  taskStatus: 'task_status',
   toolUse: 'tool_use',
   toolResult: 'tool_result',
   thinking: 'thinking',
@@ -27,34 +28,13 @@ export const ContentBlockType = {
 export const CONTENT_TYPE_VALUES = Array.from(Object.values(ContentBlockType));
 export type CONTENT_BLOCK_TYPE = (typeof ContentBlockType)[keyof typeof ContentBlockType];
 
-interface ContentBase {
-  type: CONTENT_BLOCK_TYPE;
-}
-
-export interface TextContent extends ContentBase {
-  type: 'text' | 'task' | 'thinking';
-  text: string;
-}
-
-export interface ToolResultContent extends ContentBase {
-  type: 'tool_result';
-  toolUseId: string;
-  content: ICallToolResult['content'];
-  isError: boolean;
-}
-
 interface Base {
   type: CHUNK_TYPE;
 }
 
-interface ContentBlockStartBase extends Base {
-  index: number;
-}
-
-interface ContentBlockDeltaBase extends Base {
-  index: number;
-}
-
+/*
+  message type start
+ */
 export interface MessageStart extends Base {
   type: 'message_start';
   message: {
@@ -76,65 +56,122 @@ export interface MessageStop extends Base {
   };
 }
 
+/*
+  message type end
+ */
+
+interface ContentBlockStartBase extends Base {
+  type: 'content_block_start';
+  index: number;
+  start_timestamp: number;
+}
+
+interface ContentBlockDeltaBase extends Base {
+  type: 'content_block_delta';
+  index: number;
+}
+
+interface ContentBase {
+  type: CONTENT_BLOCK_TYPE;
+}
+
+/*
+   text content start
+ */
+export interface StartTextContent extends ContentBase {
+  type: 'text' | 'thinking';
+  text: string;
+}
+
+export type DeltaTextContent = StartTextContent;
+
+export type TextContent = DeltaTextContent | StartTextContent;
+
 export interface ContentBlockTextStart extends ContentBlockStartBase {
-  type: 'content_block_start';
-  content_block: {
-    start_timestamp: number;
-  } & TextContent;
+  content_block: StartTextContent;
 }
-
-export interface ContentBlockToolResultStart extends ContentBlockStartBase {
-  type: 'content_block_start';
-  content_block: {
-    start_timestamp: number;
-  } & ToolResultContent;
-}
-
-export interface ContentBlockToolUseStart extends ContentBlockStartBase {
-  type: 'content_block_start';
-  content_block: {
-    start_timestamp: number;
-    type: 'tool_use';
-    id: string;
-    name: string;
-    desc: string;
-  };
-}
-
-export type ContentBlockStart =
-  | ContentBlockTextStart
-  | ContentBlockToolUseStart
-  | ContentBlockToolResultStart;
 
 export interface ContentBlockTextDelta extends ContentBlockDeltaBase {
-  type: 'content_block_delta';
-  content_block: {} & TextContent;
+  content_block: DeltaTextContent;
 }
 
-export interface ContentBlockToolResultDelta extends ContentBlockDeltaBase {
-  type: 'content_block_delta';
-  content_block: {} & ToolResultContent;
+/*
+   text content end
+ */
+
+/*
+  task content start
+ */
+export interface StartTaskContent extends ContentBase, TaskSchema {
+  type: 'task';
+}
+export interface DeltaTaskStatusContent extends ContentBase {
+  type: 'task_status';
+  task_uuid: string;
+  status: TaskSchema['status'];
 }
 
-export interface ContentBlockToolUseDelta extends ContentBlockDeltaBase {
-  type: 'content_block_delta';
-  content_block: {
-    type: 'tool_use';
-    input: string;
-    should_act: boolean;
-  };
+export interface DeltaTaskContentToolUse extends ContentBase {
+  type: 'tool_use';
+  task_uuid: string;
+  step_uuid: string;
+  input: string;
+  should_act: boolean;
 }
+
+export interface DeltaTaskContentToolResult extends ContentBase {
+  type: 'tool_result';
+  task_uuid: string;
+  step_uuid: string;
+  content: ICallToolResult['content'];
+  isError: boolean;
+}
+export type TaskContent =
+  | StartTaskContent
+  | DeltaTaskStatusContent
+  | DeltaTaskContentToolUse
+  | DeltaTaskContentToolResult;
+
+export interface ContentBlockTaskStart extends ContentBlockStartBase {
+  content_block: StartTaskContent;
+}
+
+export interface ContentBlockTaskStatusDelta extends ContentBlockDeltaBase {
+  content_block: DeltaTaskStatusContent;
+}
+
+export interface ContentBlockTaskToolUseDelta extends ContentBlockDeltaBase {
+  content_block: DeltaTaskContentToolUse;
+}
+
+export interface ContentBlockTaskToolResultDelta extends ContentBlockDeltaBase {
+  content_block: DeltaTaskContentToolResult;
+}
+
+/*
+  task content end
+ */
+
+/*
+  full content block def start
+ */
+export type ContentBlockStart = ContentBlockTextStart | ContentBlockTaskStart;
 
 export type ContentBlockDelta =
   | ContentBlockTextDelta
-  | ContentBlockToolUseDelta
-  | ContentBlockToolResultDelta;
+  | ContentBlockTaskToolUseDelta
+  | ContentBlockTaskToolResultDelta
+  | ContentBlockTaskStatusDelta;
 
 export interface ContentBlockStop extends Base {
   type: 'content_block_stop';
   index: number;
   stop_timestamp: number;
 }
+
+/*
+  full content block def end
+ */
 
 export interface StatusBlock extends Base {
   type: 'status_block';

@@ -1,9 +1,6 @@
 import { v4 as uuid } from 'uuid';
-import type { ChatCompletionTool } from '@mlc-ai/web-llm';
 import type { AgentChunk, CTX, MessageStop, StatusBlock } from '../proto';
-import type { AgentState } from '../../types/fsm.ts';
-import type { StepSchema } from '../../types/planer.ts';
-import type { ICallToolResult } from '../../types/tools.ts';
+import type { AgentState, ICallToolResult, StepSchema, TaskSchema } from '../../types';
 
 interface TaskReq {
   input: string;
@@ -38,52 +35,67 @@ export class TaskCtx implements CTX<TaskReq, TaskCtx> {
     });
   }
 
-  public onToolResult(result: ICallToolResult, step: StepSchema): void {
+  public onTaskStart(task: TaskSchema): void {
+    if (this.latestChunk.type === 'message_stop') {
+      throw new Error('stream stopped');
+    }
     this.write({
       type: 'content_block_start',
+      start_timestamp: new Date().getDate(),
       index: 0,
       content_block: {
-        start_timestamp: new Date().getDate(),
-        type: 'tool_result',
-        isError: !!result.isError,
-        content: result.content,
-        toolUseId: step.step_uuid,
-      },
-    });
-    this.write({ type: 'content_block_stop', index: 0, stop_timestamp: new Date().getDate() });
-  }
-
-  public onToolUseStart(tool: ChatCompletionTool, step: StepSchema): void {
-    this.write({
-      type: 'content_block_start',
-      index: 0,
-      content_block: {
-        start_timestamp: new Date().getDate(),
-        type: 'tool_use',
-        id: step.step_uuid,
-        name: tool.function.name,
-        desc: tool.function.description || '',
+        type: 'task',
+        ...task,
       },
     });
   }
-  public onToolUseEnd(shouldAct: boolean, toolcall: string): void {
+  public onTaskStatus(task: TaskSchema): void {
+    if (this.latestChunk.type === 'message_stop') {
+      throw new Error('stream stopped');
+    }
     this.write({
       type: 'content_block_delta',
       index: 1,
       content_block: {
-        type: 'tool_use',
-        input: toolcall,
-        should_act: shouldAct,
+        type: 'task_status',
+        task_uuid: task.task_uuid,
+        status: task.status,
       },
-    });
-    this.write({
-      type: 'content_block_stop',
-      index: 0,
-      stop_timestamp: new Date().getDate(),
     });
   }
 
-  public onText(t: string, type: 'text' | 'thinking' | 'task'): void {
+  public onToolUse(step: StepSchema, task: TaskSchema, shouldAct: boolean, toolCall: string): void {
+    this.write({
+      type: 'content_block_delta',
+      index: 0,
+      content_block: {
+        type: 'tool_use',
+        task_uuid: task.task_uuid,
+        step_uuid: step.step_uuid,
+        input: toolCall,
+        should_act: shouldAct,
+      },
+    });
+  }
+
+  public onToolResult(result: ICallToolResult, step: StepSchema, task: TaskSchema): void {
+    if (this.latestChunk.type !== 'content_block_delta') {
+      return;
+    }
+    this.write({
+      type: 'content_block_delta',
+      index: this.latestChunk.index + 1,
+      content_block: {
+        type: 'tool_result',
+        isError: !!result.isError,
+        content: result.content,
+        task_uuid: task.task_uuid,
+        step_uuid: step.step_uuid,
+      },
+    });
+    this.write({ type: 'content_block_stop', index: 0, stop_timestamp: new Date().getDate() });
+  }
+  public onText(t: string, type: 'text' | 'thinking'): void {
     if (this.latestChunk.type === 'message_stop') {
       throw new Error('stream stopped');
     }
@@ -94,8 +106,8 @@ export class TaskCtx implements CTX<TaskReq, TaskCtx> {
       this.write({
         type: 'content_block_start',
         index: 0,
+        start_timestamp: new Date().getDate(),
         content_block: {
-          start_timestamp: new Date().getDate(),
           type: type,
           text: t,
         },
@@ -108,12 +120,12 @@ export class TaskCtx implements CTX<TaskReq, TaskCtx> {
       (this.latestChunk.type === 'content_block_start' &&
         this.latestChunk.content_block.type !== type)
     ) {
-      this.onTextEnd();
+      this.onContentBlockEnd();
       this.write({
         type: 'content_block_start',
         index: 0,
+        start_timestamp: new Date().getDate(),
         content_block: {
-          start_timestamp: new Date().getDate(),
           type: type,
           text: t,
         },
@@ -130,7 +142,7 @@ export class TaskCtx implements CTX<TaskReq, TaskCtx> {
     });
   }
 
-  public onTextEnd(): void {
+  public onContentBlockEnd(): void {
     if (
       this.latestChunk.type !== 'content_block_delta' &&
       this.latestChunk.type !== 'content_block_start'
