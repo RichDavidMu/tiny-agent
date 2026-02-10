@@ -55,17 +55,27 @@ export class TaskCtx implements CTX<TaskReq, TaskCtx> {
     this.write({ type: 'content_block_stop', index: 0, stop_timestamp: new Date().getDate() });
   }
 
-  public onToolUse(tool: ChatCompletionTool & { id: string }, toolcall: ToolCallResponse): void {
+  public onToolUseStart(tool: ChatCompletionTool, step: StepSchema): void {
     this.write({
       type: 'content_block_start',
       index: 0,
       content_block: {
         start_timestamp: new Date().getDate(),
         type: 'tool_use',
-        id: tool.id,
-        input: toolcall.function.arguments,
+        id: step.step_uuid,
         name: tool.function.name,
         desc: tool.function.description || '',
+      },
+    });
+  }
+  public onToolUseEnd(shouldAct: boolean, toolcall: ToolCallResponse | null): void {
+    this.write({
+      type: 'content_block_delta',
+      index: 1,
+      content_block: {
+        type: 'tool_use',
+        input: toolcall,
+        should_act: shouldAct,
       },
     });
     this.write({

@@ -4,6 +4,7 @@ import type {
   ChatCompletionMessageParam,
   ChatCompletionTool,
 } from '@mlc-ai/web-llm/lib/openai_api_protocols/chat_completion';
+import { agentLogger } from '@tini-agent/utils';
 import type {
   AskLLMInputBase,
   AskLLMInputNonStreaming,
@@ -37,7 +38,7 @@ export class LLM {
       throw new ValueError('No available LLM client');
     }
     await this.client.reload(this.model_id, this.config);
-    console.log(this.model_id, ' reloaded');
+    agentLogger.log(this.model_id, ' reloaded');
   }
 
   async unload(): Promise<void> {
@@ -45,7 +46,7 @@ export class LLM {
       throw new ValueError('No available LLM client');
     }
     await this.client.unload();
-    console.log(this.model_id, ' unloaded');
+    agentLogger.log(this.model_id, ' unloaded');
   }
 
   async load(): Promise<void> {
@@ -62,7 +63,7 @@ export class LLM {
       this.config,
     );
     await this.client.unload();
-    console.log(this.model_id, 'loaded');
+    agentLogger.log(this.model_id, 'loaded');
     this.ready = true;
   }
 

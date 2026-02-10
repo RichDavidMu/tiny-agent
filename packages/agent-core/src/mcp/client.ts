@@ -4,6 +4,7 @@
  */
 
 import type { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
+import { agentLogger } from '@tini-agent/utils';
 import type { ToolCall } from '../tools/toolCall.ts';
 import type {
   JsonRpcRequest,
@@ -143,7 +144,7 @@ export class MCPClient {
         },
       });
 
-      console.log(
+      agentLogger.debug(
         `Connected to MCP server: ${initResult.serverInfo.name} v${initResult.serverInfo.version}`,
       );
 

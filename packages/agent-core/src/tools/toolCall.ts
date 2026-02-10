@@ -1,5 +1,6 @@
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type { ChatCompletionAssistantMessageParam } from '@mlc-ai/web-llm';
+import { agentLogger } from '@tini-agent/utils';
 import { agentDb } from '../storage/db.ts';
 import type { ToolCallResponse } from '../types/llm.ts';
 import type { PlanSchema, StepSchema, TaskSchema } from '../types/planer.ts';
@@ -24,12 +25,14 @@ export abstract class ToolCall {
     plan: PlanSchema,
     ctx: TaskCtx,
   ): Promise<ICallToolResult> {
+    ctx.onToolUseStart(this.tool.toParams(), step);
     let toolContext: ChatCompletionAssistantMessageParam[] = [];
     if (this.needContext) {
       toolContext = await this.buildToolCallContext(step, plan);
     }
     const shouldAct = await this.think(step, task);
-    console.log(
+    ctx.onToolUseEnd(shouldAct, this.toolCall);
+    agentLogger.debug(
       'shouldAct\n',
       shouldAct,
       '\n',
@@ -40,7 +43,6 @@ export abstract class ToolCall {
     );
     let result: CallToolResult;
     if (shouldAct) {
-      ctx.onToolUse({ ...this.tool.toParams(), id: step.step_uuid }, this.toolCall!);
       result = await this.act(this.toolCall!, toolContext);
       ctx.onToolResult(result, step);
     } else {

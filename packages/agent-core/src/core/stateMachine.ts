@@ -1,3 +1,4 @@
+import { agentLogger } from '@tini-agent/utils';
 import { AgentState, type StateContext } from '../types/fsm.ts';
 
 /**
@@ -29,7 +30,7 @@ export class StateMachine {
       this.updateContext(updates);
     }
     this.context.state = newState;
-    console.log(`State transition: ${oldState} -> ${newState}`);
+    agentLogger.debug(`State transition: ${oldState} -> ${newState}`);
     this.notifyListeners(newState);
   }
 

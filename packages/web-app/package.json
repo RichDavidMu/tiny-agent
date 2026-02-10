@@ -17,6 +17,7 @@
     "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@tini-agent/utils": "workspace:*",
     "@types/lodash": "^4.17.23",
     "agent-core": "workspace:*",
     "class-variance-authority": "^0.7.1",

@@ -1,3 +1,5 @@
+import { agentLogger } from '@tini-agent/utils';
+
 export function retry({
   stop = 1,
   wait = 60,
@@ -23,7 +25,7 @@ export function retry({
           if (attempts >= stop || !retry(e)) {
             throw lastError;
           }
-          console.log(`Retry ${propertyName} ${attempts}/${stop} after ${wait / 1000} s`);
+          agentLogger.debug(`Retry ${propertyName} ${attempts}/${stop} after ${wait / 1000} s`);
           if (wait > 0) {
             await new Promise((r) => setTimeout(r, wait));
           }

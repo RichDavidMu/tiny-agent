@@ -46,10 +46,18 @@ export interface ToolResultContent extends ContentBase {
   isError: boolean;
 }
 
-export type ContentType = TextContent | ToolResultContent | ToolUseContent;
+export type ContentType = TextContent | ToolResultContent;
 
 interface Base {
   type: CHUNK_TYPE;
+}
+
+interface ContentBlockStartBase extends Base {
+  index: number;
+}
+
+interface ContentBlockDeltaBase extends Base {
+  index: number;
 }
 
 export interface MessageStart extends Base {
@@ -73,18 +81,40 @@ export interface MessageStop extends Base {
   };
 }
 
-export interface ContentBlockStart extends Base {
+export interface ContentBlockTextStart extends ContentBlockStartBase {
   type: 'content_block_start';
-  index: number;
   content_block: {
     start_timestamp: number;
   } & ContentType;
 }
-export interface ContentBlockDelta extends Base {
+
+export interface ContentBlockToolUseStart extends ContentBlockStartBase {
+  type: 'content_block_start';
+  content_block: {
+    start_timestamp: number;
+    type: 'tool_use';
+    id: string;
+    name: string;
+    desc: string;
+  };
+}
+
+type ContentBlockStart = ContentBlockTextStart | ContentBlockToolUseStart;
+
+export interface ContentBlockTextDelta extends ContentBlockDeltaBase {
   type: 'content_block_delta';
-  index: number;
   content_block: {} & ContentType;
 }
+export interface ContentBlockToolUseDelta extends ContentBlockDeltaBase {
+  type: 'content_block_delta';
+  content_block: {
+    type: 'tool_use';
+    input: Record<string, any> | null;
+    should_act: boolean;
+  };
+}
+
+type ContentBlockDelta = ContentBlockTextDelta | ContentBlockToolUseDelta;
 
 export interface ContentBlockStop extends Base {
   type: 'content_block_stop';

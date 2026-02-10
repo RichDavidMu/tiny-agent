@@ -16,6 +16,7 @@
   "packageManager": "pnpm@10.26.2",
   "dependencies": {
     "@mlc-ai/web-llm": "workspace:*",
+    "@tini-agent/utils": "workspace:*",
     "lodash": "^4.17.23",
     "mcp-bridge-extension": "workspace:*",
     "uuid": "^11.1.0"

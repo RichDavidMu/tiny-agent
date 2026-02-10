@@ -1,4 +1,3 @@
-import { cloneDeep } from 'lodash';
 import { AgentState, type PolicyDecision, type StateContext } from '../types/fsm.ts';
 
 /**
@@ -15,7 +14,6 @@ export class Policy implements IPolicy {
   private readonly maxRethinkRounds = 10;
 
   async decide(context: StateContext): Promise<PolicyDecision> {
-    console.log(cloneDeep(context));
     switch (context.state) {
       case AgentState.IDLE: {
         return { nextState: AgentState.PLANNING, action: 'plan' };

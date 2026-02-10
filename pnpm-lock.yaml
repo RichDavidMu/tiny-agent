@@ -64,6 +64,9 @@ importers:
       '@mlc-ai/web-llm':
         specifier: workspace:*
         version: link:../web-llm
+      '@tini-agent/utils':
+        specifier: workspace:*
+        version: link:../utils
       lodash:
         specifier: ^4.17.23
         version: 4.17.23
@@ -135,6 +138,9 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.2.8
         version: 1.2.8(@types/react-dom@19.2.3(@types/react@19.2.8))(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@tini-agent/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@types/lodash':
         specifier: ^4.17.23
         version: 4.17.23

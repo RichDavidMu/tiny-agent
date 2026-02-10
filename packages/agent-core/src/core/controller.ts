@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { agentLogger } from '@tini-agent/utils';
 import type { PlanSchema, RethinkRes } from '../types/planer.ts';
 import { createThinkingContentTransform } from '../llm/transformers/thinkingContentTransform.ts';
 import {
@@ -52,7 +53,7 @@ export class AgentController {
     while (true) {
       const context = this.stateMachine.getContext();
       const decision = await this.policy.decide(context);
-      console.log(`Decision: ${decision.action}, Next State: ${decision.nextState}`);
+      agentLogger.log(`Decision: ${decision.action}, Next State: ${decision.nextState}`);
       this.ctx.status(decision.nextState);
       // Transition to next state
       this.stateMachine.transition(decision.nextState);
@@ -127,7 +128,7 @@ export class AgentController {
       this.stateMachine.updateContext({ error: new EmptyPlan('Failed to generate plan') });
       return;
     }
-    console.log(`thinking:\n${thinking}\nplan:\n${planText}`);
+    agentLogger.debug(`thinking:\n${thinking}\nplan:\n${planText}`);
     const plan: PlanSchema = JSON.parse(planText);
     this.attachIds(plan);
 
@@ -167,7 +168,7 @@ export class AgentController {
       task: context.currentTask,
       plan: context.plan,
     });
-    console.log('Tool execution result:', result);
+    agentLogger.debug('Tool execution result:', result);
     nextStep.result_file_id = `file-${uuidv4()}`;
     await persistResult(result, nextStep, context.currentTask.task_uuid, tool);
     // Update context with current step
@@ -240,7 +241,7 @@ export class AgentController {
     this.ctx.onTextEnd();
 
     await llmController.planLLM.unload();
-    console.log(
+    agentLogger.debug(
       `thinking:\n${thinking}\nplan:\n${planText}\n final:\n${finalText}\n status:${status}`,
     );
     const rethinkResult = this.parseRethinkResult(status.trim(), finalText, planText);

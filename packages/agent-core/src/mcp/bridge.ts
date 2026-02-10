@@ -14,6 +14,7 @@ import {
   MCP_BRIDGE_ID,
   MCP_BRIDGE_READY_EVENT,
 } from 'mcp-bridge-extension';
+import { agentLogger } from '@tini-agent/utils';
 
 // 获取 bridge 对象
 function getBridge(): MCPBridgeWindow | null {
@@ -364,7 +365,7 @@ export function createSmartFetch(): typeof fetch {
         return await bridgeFetch(url, init);
       } catch {
         // 扩展请求失败，回退到原生 fetch
-        console.warn('[MCP Bridge] Extension request failed, falling back to native fetch');
+        agentLogger.log('[MCP Bridge] Extension request failed, falling back to native fetch');
       }
     }
 

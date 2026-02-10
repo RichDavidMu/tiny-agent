@@ -1,4 +1,5 @@
 import type { ChatCompletionTool } from '@mlc-ai/web-llm';
+import { agentLogger } from '@tini-agent/utils';
 import type { StepSchema } from '../types/planer.ts';
 import type { ICallToolResult } from '../types/tools.ts';
 import { agentDb } from './db.ts';
@@ -50,7 +51,7 @@ export async function persistResult(
         content: fileContent,
       });
     } catch (e) {
-      console.log(e);
+      agentLogger.error(e);
     }
   }
 
