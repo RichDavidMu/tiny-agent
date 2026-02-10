@@ -5,7 +5,7 @@ import type {
   ContentBlockToolUseStart,
   ICallToolResult,
 } from 'agent-core';
-import { BaseContentNode } from '@/core/node/contentNodes';
+import { BaseContentNode } from '@/stream/node/contentNodes';
 
 export class ToolNode extends BaseContentNode {
   type = 'tool_use' as const;

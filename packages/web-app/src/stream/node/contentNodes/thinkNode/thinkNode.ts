@@ -1,5 +1,5 @@
 import type { ContentBlockTextDelta, ContentBlockTextStart } from 'agent-core';
-import { BaseContentNode } from '@/core/node/contentNodes/base.ts';
+import { BaseContentNode } from '@/stream/node/contentNodes/base.ts';
 
 export class ThinkNode extends BaseContentNode {
   type = 'thinking' as const;

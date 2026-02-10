@@ -1,6 +1,6 @@
 import type { ROLE_TYPE } from 'agent-core';
 import { makeAutoObservable, observable } from 'mobx';
-import type { ContentNode } from '@/core/node/contentNodes';
+import type { ContentNode } from '@/stream/node/contentNodes';
 
 export class Node {
   role: ROLE_TYPE;

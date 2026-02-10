@@ -1,4 +1,4 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, runInAction } from 'mobx';
 import {
   type ContentBlockDelta,
   type ContentBlockStart,
@@ -10,11 +10,11 @@ import {
   service,
 } from 'agent-core';
 import { webLogger } from '@tini-agent/utils';
-import tree from '@/core/tree.ts';
-import { type ContentNode, Node, TextNode } from '@/core/node';
-import { ThinkNode } from '@/core/node/contentNodes/thinkNode';
-import { TaskNode } from '@/core/node/contentNodes/taskNode';
-import { ToolNode } from '@/core/node/contentNodes/toolNode';
+import tree from '@/stream/tree.ts';
+import { type ContentNode, Node, TextNode } from '@/stream/node';
+import { ThinkNode } from '@/stream/node/contentNodes/thinkNode';
+import { TaskNode } from '@/stream/node/contentNodes/taskNode';
+import { ToolNode } from '@/stream/node/contentNodes/toolNode';
 
 class Stream {
   loading = false;
@@ -57,7 +57,9 @@ class Stream {
     } catch (error) {
       webLogger.error(error);
     }
-    this.loading = false;
+    runInAction(() => {
+      this.loading = false;
+    });
   }
 
   handleContentBlockStart(chunk: ContentBlockStart) {

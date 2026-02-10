@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import { Node } from '@/core/node/node.ts';
+import { Node } from '@/stream/node/node.ts';
 
 class Tree {
   root = Tree.createRoot();
