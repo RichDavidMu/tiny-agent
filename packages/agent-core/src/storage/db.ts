@@ -1,19 +1,23 @@
 import { FileTable } from './fileTable.ts';
 import { ToolResultTable } from './toolResultTable.ts';
+import { SessionTable } from './sessionTable.ts';
 
 export class AgentDb {
   private readonly dbName = 'agent-core';
-  private readonly version = 5;
+  private readonly version = 6;
   private readonly fileStoreName = 'files';
   private readonly toolResultStoreName = 'toolResults';
+  private readonly sessionStoreName = 'sessions';
   private dbPromise: Promise<IDBDatabase> | null = null;
 
   readonly file: FileTable;
   readonly toolResult: ToolResultTable;
+  readonly session: SessionTable;
 
   constructor() {
     this.file = new FileTable(() => this.openDb(), this.fileStoreName);
     this.toolResult = new ToolResultTable(() => this.openDb(), this.toolResultStoreName);
+    this.session = new SessionTable(() => this.openDb(), this.sessionStoreName);
   }
 
   private ensureIndexedDb(): void {
@@ -38,6 +42,9 @@ export class AgentDb {
         }
         if (!db.objectStoreNames.contains(this.toolResultStoreName)) {
           db.createObjectStore(this.toolResultStoreName, { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains(this.sessionStoreName)) {
+          db.createObjectStore(this.sessionStoreName, { keyPath: 'id' });
         }
       };
       request.onsuccess = () => resolve(request.result);

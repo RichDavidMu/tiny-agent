@@ -7,8 +7,7 @@ import {
   createThinkingContentTransform,
   llmController,
 } from '../llm';
-import { persistResult } from '../storage/persistResult.ts';
-import { agentDb } from '../storage/db.ts';
+import { agentDb, persistResult } from '../storage';
 import type { MessageStop, TaskCtx } from '../service';
 import { PlanSystemPrompt, PlanUserPrompt } from './prompt/planPrompt.ts';
 import type { ToolActor } from './toolActor.ts';
@@ -21,7 +20,7 @@ import { RethinkSystemPrompt, RethinkUserPrompt } from './prompt/rethinkPrompt.t
  * Agent Controller - orchestrates state machine, policy, and tool actor
  */
 export class AgentController {
-  private stateMachine: StateMachine;
+  public stateMachine: StateMachine;
   private policy: IPolicy;
   private toolActor: ToolActor;
   public ctx: TaskCtx;
@@ -48,6 +47,7 @@ export class AgentController {
    */
   async execute(): Promise<void> {
     this.stateMachine.reset(this.ctx.req.input);
+
     while (true) {
       const context = this.stateMachine.getContext();
       const decision = await this.policy.decide(context);

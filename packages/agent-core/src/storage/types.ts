@@ -56,3 +56,48 @@ export type CreateToolResultInput = {
   shouldAct: boolean;
   input: Record<string, any> | null;
 };
+
+// Session history types
+export type SessionRecord = {
+  createdAt: number;
+  updatedAt: number;
+} & CreateSessionInput;
+
+export type CreateSessionInput = {
+  id: string; // session_id
+  nodes: SessionNode[];
+};
+
+export type SessionNode = {
+  id: string; // message_id
+  role: 'user' | 'assistant';
+  parent: string | null;
+  content: SessionContentNode[];
+};
+
+export type SessionContentNode = SessionTextContent | SessionThinkingContent | SessionTaskContent;
+
+export type SessionTextContent = {
+  type: 'text';
+  text: string;
+};
+
+export type SessionThinkingContent = {
+  type: 'thinking';
+  text: string;
+};
+
+export type SessionTaskContent = {
+  type: 'task';
+  task_uuid: string;
+  task_goal: string;
+  status: 'pending' | 'done' | 'error';
+  steps: SessionStepContent[];
+};
+
+export type SessionStepContent = {
+  step_uuid: string;
+  step_goal: string;
+  tool_name: string;
+  status: 'pending' | 'done' | 'error';
+};

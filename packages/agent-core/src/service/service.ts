@@ -2,7 +2,8 @@ import { MCPClientHost } from '../mcp';
 import { AgentController, ToolActor } from '../core';
 import { llmController } from '../llm';
 import type { AgentChunk } from './proto';
-import { TaskCtx } from './handlers';
+import { TaskCtx, type TaskReq } from './handlers';
+import { saveSessionHistory } from './handlers/history/save';
 
 class Service {
   private readonly toolActor = new ToolActor();
@@ -20,11 +21,13 @@ class Service {
     });
   }
 
-  async taskStream(params: { input: string }): Promise<ReadableStream<AgentChunk>> {
+  async taskStream(params: TaskReq): Promise<ReadableStream<AgentChunk>> {
     await this.waitForReady();
     const ctx = new TaskCtx({ req: params });
     const agent = new AgentController(this.toolActor, ctx);
-    agent.execute();
+    agent.execute().then(() => {
+      saveSessionHistory(ctx, agent.stateMachine.getContext());
+    });
     return ctx.rs;
   }
 

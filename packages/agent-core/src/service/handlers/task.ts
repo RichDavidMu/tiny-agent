@@ -4,7 +4,7 @@ import type { AgentState, ICallToolResult, StepSchema, TaskSchema } from '../../
 
 export interface TaskReq {
   input: string;
-  parent?: string;
+  sessionId?: string;
 }
 
 export class TaskCtx implements CTX<TaskReq, TaskCtx> {
@@ -13,27 +13,39 @@ export class TaskCtx implements CTX<TaskReq, TaskCtx> {
   rs: ReadableStream<AgentChunk>;
   private controller!: ReadableStreamDefaultController<AgentChunk>;
   private latestChunk!: Exclude<AgentChunk, StatusBlock>;
-  private messageId = uuid();
+  private assistantMessageId = uuid();
+  private userMessageId = uuid();
+  private sessionId: string;
 
   constructor({ req }: { req: TaskReq }) {
+    const { sessionId = uuid() } = req;
     this.req = req;
     this.rs = new ReadableStream<AgentChunk>({
       start: (c) => {
         this.controller = c;
       },
     });
+    this.sessionId = sessionId;
     this.write({
       type: 'message_start',
       message: {
         start_timestamp: new Date().getDate(),
-        id: this.messageId,
+        id: this.assistantMessageId,
         type: 'message',
         role: 'assistant',
         model: '',
-        parent: uuid(),
+        parent: this.userMessageId,
         content: [],
       },
     });
+  }
+
+  public getIDs() {
+    return {
+      assistantMessageId: this.assistantMessageId,
+      userMessageId: this.userMessageId,
+      sessionId: this.sessionId,
+    };
   }
 
   public onTaskStart(task: TaskSchema): void {
@@ -167,7 +179,7 @@ export class TaskCtx implements CTX<TaskReq, TaskCtx> {
   }
 
   public onEnd(stop_reason: MessageStop['message']['stop_reason']): void {
-    this.write({ type: 'message_stop', message: { id: this.messageId, stop_reason } });
+    this.write({ type: 'message_stop', message: { id: this.assistantMessageId, stop_reason } });
     this.close();
   }
 
