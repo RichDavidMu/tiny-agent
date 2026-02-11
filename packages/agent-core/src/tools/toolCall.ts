@@ -47,7 +47,6 @@ export abstract class ToolCall {
     let result: CallToolResult;
     if (shouldAct) {
       result = await this.act(this.toolCall!, toolContext);
-      ctx.onToolResult(result, step, task);
     } else {
       result = {
         content: [

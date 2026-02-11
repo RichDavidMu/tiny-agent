@@ -9,6 +9,7 @@ import {
   getHistory,
   saveSessionHistory,
 } from './handlers';
+import { getSessionListHandler } from './handlers/session/list.ts';
 
 class Service {
   private readonly toolActor = new ToolActor();
@@ -38,6 +39,10 @@ class Service {
 
   async getSessionHistory(params: GetHistoryReq) {
     return await getHistory(params);
+  }
+
+  async getSessionList() {
+    return await getSessionListHandler();
   }
 
   async addMcpServer(name: string, url: string): Promise<void> {

@@ -48,17 +48,25 @@ async function transformContentNode(node: SessionContentNode): Promise<HistoryCo
 }
 
 async function transformTaskContent(task: SessionTaskContent): Promise<HistoryContentNode> {
-  const steps: HistoryStepContent[] = await Promise.all(
+  const steps: (HistoryStepContent | null)[] = await Promise.all(
     task.steps.map(async (step) => {
       const toolResult = await agentDb.toolResult.get(step.step_uuid);
+      if (!toolResult) {
+        return null;
+      }
       return {
         step_uuid: step.step_uuid,
         step_goal: step.step_goal,
         tool_name: step.tool_name,
         status: step.status,
-        input: toolResult?.input ?? {},
-        shouldAct: toolResult?.shouldAct ?? true,
-        result: toolResult?.result || 'get tool result failed',
+        input: toolResult.input,
+        shouldAct: toolResult.shouldAct,
+        result: toolResult.result,
+        attachment: {
+          id: toolResult.fileId,
+          name: toolResult.resultFile,
+          mimeType: toolResult.mimeType,
+        },
       };
     }),
   );
@@ -68,6 +76,6 @@ async function transformTaskContent(task: SessionTaskContent): Promise<HistoryCo
     task_uuid: task.task_uuid,
     task_goal: task.task_goal,
     status: task.status,
-    steps,
+    steps: steps.filter(Boolean) as HistoryStepContent[],
   };
 }

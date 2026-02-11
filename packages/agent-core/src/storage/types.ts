@@ -1,4 +1,5 @@
 import type { ChatCompletionTool } from '@mlc-ai/web-llm';
+import type { DeltaTaskContentToolResult } from '../service';
 
 export type FileRecord = {
   createdAt: number;
@@ -9,34 +10,6 @@ export type CreateFileInput = {
   name: string;
   mimeType: string;
   content: string;
-};
-
-export type FileIndexRecord = {
-  id: string;
-  fileId: string;
-  name: string;
-  chunkText: string;
-  chunkIndex: number;
-  taskId: string;
-  stepId: string;
-  toolName: string;
-  embedding?: ArrayBuffer;
-  embeddingDim?: number;
-  embeddingModel?: string;
-  createdAt: number;
-};
-
-export type CreateFileIndexInput = {
-  fileId: string;
-  name: string;
-  chunkText: string;
-  chunkIndex: number;
-  taskId: string;
-  stepId: string;
-  toolName: string;
-  embedding?: ArrayBuffer;
-  embeddingDim?: number;
-  embeddingModel?: string;
 };
 
 export type ToolResultRecord = {
@@ -51,7 +24,8 @@ export type CreateToolResultInput = {
   result: string;
   isError: boolean;
   resultFile: string;
-  fileId: string | null;
+  fileId: string;
+  mimeType: string;
   tool: null | ChatCompletionTool;
   shouldAct: boolean;
   input: Record<string, any> | null;
@@ -100,4 +74,5 @@ export type SessionStepContent = {
   step_goal: string;
   tool_name: string;
   status: 'pending' | 'done' | 'error';
+  attachment: DeltaTaskContentToolResult['attachment'];
 };

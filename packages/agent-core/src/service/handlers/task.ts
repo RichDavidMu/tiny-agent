@@ -1,6 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import type { AgentChunk, CTX, MessageStop, StatusBlock } from '../proto';
-import type { AgentState, ICallToolResult, StepSchema, TaskSchema } from '../../types';
+import type { AgentState, StepSchema, TaskSchema } from '../../types';
+import type { CreateToolResultInput } from '../../storage';
 
 export interface TaskReq {
   input: string;
@@ -97,19 +98,29 @@ export class TaskCtx implements CTX<TaskReq, TaskCtx> {
     });
   }
 
-  public onToolResult(result: ICallToolResult, step: StepSchema, task: TaskSchema): void {
+  public onToolResult(
+    savedResult: CreateToolResultInput,
+    step: StepSchema,
+    task: TaskSchema,
+  ): void {
     if (this.latestChunk.type !== 'content_block_delta') {
       return;
     }
+    const { fileId, result, resultFile, isError, mimeType } = savedResult;
     this.write({
       type: 'content_block_delta',
       index: this.latestChunk.index + 1,
       content_block: {
         type: 'tool_result',
-        isError: !!result.isError,
-        content: result.content,
+        isError: isError,
+        content: result,
         task_uuid: task.task_uuid,
         step_uuid: step.step_uuid,
+        attachment: {
+          id: fileId,
+          name: resultFile,
+          mimeType,
+        },
       },
     });
     this.write({ type: 'content_block_stop', index: 0, stop_timestamp: new Date().getDate() });

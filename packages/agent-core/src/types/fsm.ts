@@ -18,6 +18,7 @@ export enum AgentState {
  * State transition context
  */
 export interface StateContext {
+  thinking: string;
   state: AgentState;
   plan: PlanSchema | null;
   currentTask: TaskSchema | null;

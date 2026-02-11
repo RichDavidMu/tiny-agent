@@ -7,6 +7,7 @@ export interface TaskSchema {
   task_goal: string;
   status: 'pending' | 'done' | 'error';
   steps: StepSchema[];
+  thinking?: string;
 }
 export interface StepSchema {
   step_id: string;

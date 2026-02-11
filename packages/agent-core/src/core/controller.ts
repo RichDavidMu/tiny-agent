@@ -32,11 +32,12 @@ export class AgentController {
 
     // Initialize state machine
     const initialContext: StateContext = {
+      thinking: '',
       state: AgentState.IDLE,
       plan: null,
       currentTask: null,
       currentStep: null,
-      userInput: '',
+      userInput: ctx.req.input,
       rethinkRounds: 0,
     };
     this.stateMachine = new StateMachine(initialContext);
@@ -46,8 +47,6 @@ export class AgentController {
    * Execute a task
    */
   async execute(): Promise<void> {
-    this.stateMachine.reset(this.ctx.req.input);
-
     while (true) {
       const context = this.stateMachine.getContext();
       const decision = await this.policy.decide(context);
@@ -137,6 +136,7 @@ export class AgentController {
     // Find first pending task
     const firstTask = plan.tasks.find((t) => t.status === 'pending');
     this.stateMachine.updateContext({
+      thinking,
       plan,
       currentTask: firstTask || null,
     });
@@ -171,7 +171,8 @@ export class AgentController {
     });
     agentLogger.debug('Tool execution result:', result);
     nextStep.result_file_id = `file-${uuidv4()}`;
-    await persistResult(result, nextStep, context.currentTask.task_uuid, tool);
+    const savedResult = await persistResult(result, nextStep, context.currentTask.task_uuid, tool);
+    this.ctx.onToolResult(savedResult, nextStep, context.currentTask);
     // Update context with current step
     if (context.currentTask.steps.every((s) => s.status !== 'pending')) {
       if (context.currentTask.steps.find((s) => s.status === 'error')) {
@@ -227,7 +228,6 @@ export class AgentController {
     while (!(chunk = await reader.read()).done) {
       if (chunk.value.type === 'thinking') {
         thinking += chunk.value.content;
-        this.ctx.onText(chunk.value.content, 'thinking');
       }
       if (chunk.value.type === 'plan') {
         planText += chunk.value.content;
@@ -239,8 +239,6 @@ export class AgentController {
         status = chunk.value.content;
       }
     }
-
-    this.ctx.onContentBlockEnd();
 
     await llmController.planLLM.unload();
     agentLogger.debug(

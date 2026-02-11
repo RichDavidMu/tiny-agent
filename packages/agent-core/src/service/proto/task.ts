@@ -1,4 +1,5 @@
-import type { AgentState, ICallToolResult, TaskSchema } from '../../types';
+import type { AgentState, TaskSchema } from '../../types';
+import type { CreateFileInput } from '../../storage';
 
 export const Role = {
   user: 'user',
@@ -124,7 +125,8 @@ export interface DeltaTaskContentToolResult extends ContentBase {
   type: 'tool_result';
   task_uuid: string;
   step_uuid: string;
-  content: ICallToolResult['content'];
+  content: string;
+  attachment: Pick<CreateFileInput, 'id' | 'name' | 'mimeType'> | null;
   isError: boolean;
 }
 export interface ContentBlockTaskStart extends ContentBlockStartBase {

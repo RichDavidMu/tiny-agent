@@ -1,5 +1,5 @@
 import { agentLogger } from '@tini-agent/utils';
-import { AgentState, type StateContext } from '../types';
+import type { AgentState, StateContext } from '../types';
 
 /**
  * State machine for agent execution
@@ -46,16 +46,5 @@ export class StateMachine {
     if (callbacks) {
       callbacks.forEach((cb) => cb(this.getContext()));
     }
-  }
-
-  reset(userInput: string): void {
-    this.context = {
-      state: AgentState.IDLE,
-      plan: null,
-      currentTask: null,
-      currentStep: null,
-      userInput,
-      rethinkRounds: 0,
-    };
   }
 }

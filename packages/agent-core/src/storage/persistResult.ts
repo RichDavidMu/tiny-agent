@@ -2,6 +2,7 @@ import type { ChatCompletionTool } from '@mlc-ai/web-llm';
 import { agentLogger } from '@tini-agent/utils';
 import type { StepSchema, ToolStepResult } from '../types';
 import { agentDb } from './db.ts';
+import type { CreateToolResultInput } from './types.ts';
 
 /**
  * Persist tool execution result to database
@@ -13,7 +14,7 @@ export async function persistResult(
   step: StepSchema,
   taskId: string,
   tool: ChatCompletionTool | null,
-): Promise<void> {
+): Promise<CreateToolResultInput> {
   const { result, shouldAct, input } = stepResult;
   const fileName = step.result_file_name;
   const content = result.content[0];
@@ -47,7 +48,7 @@ export async function persistResult(
       await agentDb.file.create({
         id: step.result_file_id!,
         name: fileName,
-        mimeType: mimeType,
+        mimeType,
         content: fileContent,
       });
     } catch (e) {
@@ -55,18 +56,21 @@ export async function persistResult(
     }
   }
 
-  // Always record to toolResult table
-  await agentDb.toolResult.create({
+  const stepInfo = {
     id: step.step_uuid,
     stepId: step.step_id,
     taskId: taskId,
     result: resultText,
     isError: isError,
     stepGoal: step.step_goal,
-    resultFile: step.result_file_name,
+    resultFile: fileName,
+    mimeType,
     fileId: step.result_file_id!,
     shouldAct,
     input,
     tool,
-  });
+  };
+  // Always record to toolResult table
+  await agentDb.toolResult.create(stepInfo);
+  return { ...stepInfo };
 }

@@ -24,6 +24,9 @@ export function buildSessionNodeFromContext(
   if (role === 'user') {
     content.push({ type: 'text', text: context.userInput });
   } else {
+    if (context.thinking) {
+      content.push({ type: 'thinking', text: context.thinking });
+    }
     // handle assistant node
     if (context.plan) {
       for (const task of context.plan.tasks) {
