@@ -1,7 +1,6 @@
 import type {
   ContentBlockTaskToolResultDelta,
   ContentBlockTaskToolUseDelta,
-  ICallToolResult,
   StepSchema,
 } from 'agent-core';
 import { makeAutoObservable } from 'mobx';
@@ -11,7 +10,7 @@ export class Step {
   meta: StepSchema;
   input?: Record<string, any>;
   shouldAct: boolean | null = null;
-  content: ICallToolResult['content'] | null = null;
+  content: string | null = null;
   constructor({ meta }: { meta: StepSchema }) {
     makeAutoObservable(this);
     this.meta = meta;
@@ -21,17 +20,14 @@ export class Step {
     if (!this.content || this.meta.status !== 'done') {
       return undefined;
     }
-    return this.content[0];
+    return this.content;
   }
 
   get errorText() {
     if (!this.content || this.meta.status !== 'error') {
       return undefined;
     }
-    if (this.content[0].type !== 'text') {
-      return 'unexpected error';
-    }
-    return this.content[0].text;
+    return this.content;
   }
 
   get state(): ToolPart['state'] {

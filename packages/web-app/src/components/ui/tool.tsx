@@ -10,7 +10,7 @@ export type ToolPart = {
   type: string;
   state: 'input-streaming' | 'input-available' | 'output-available' | 'output-error';
   input?: Record<string, unknown>;
-  output?: Record<string, unknown>;
+  output?: string;
   toolCallId?: string;
   errorText?: string;
 };
