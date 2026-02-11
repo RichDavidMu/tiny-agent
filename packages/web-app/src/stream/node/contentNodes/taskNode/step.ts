@@ -6,8 +6,7 @@ import type {
 } from 'agent-core';
 import { makeAutoObservable } from 'mobx';
 
-export class StepMeta {
-  type = 'step' as const;
+export class Step {
   meta: StepSchema;
   toolCall: string | null = null;
   shouldAct: boolean | null = null;

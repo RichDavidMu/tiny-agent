@@ -1,2 +1,2 @@
 export * from './taskNode.ts';
-export * from './stepMeta.ts';
+export * from './step.ts';

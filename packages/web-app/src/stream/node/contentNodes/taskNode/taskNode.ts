@@ -6,14 +6,14 @@ import type {
 } from 'agent-core';
 import { makeAutoObservable, observable } from 'mobx';
 import { BaseContentNode } from '../base.ts';
-import { StepMeta } from './stepMeta.ts';
+import { Step } from './step.ts';
 
 export class TaskNode extends BaseContentNode {
   type = 'task' as const;
   taskGoal = '';
   taskUuid = '';
   status: TaskSchema['status'] = 'pending';
-  steps = observable.map<string, StepMeta>();
+  steps = observable.map<string, Step>();
   get stepList() {
     return Array.from(this.steps.values());
   }
@@ -27,7 +27,7 @@ export class TaskNode extends BaseContentNode {
       this.taskGoal = task_goal;
       this.taskUuid = task_uuid;
       steps.forEach((s) => {
-        this.steps.set(s.step_uuid, new StepMeta({ meta: s }));
+        this.steps.set(s.step_uuid, new Step({ meta: s }));
       });
       return;
     }
