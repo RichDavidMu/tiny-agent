@@ -2,8 +2,13 @@ import { MCPClientHost } from '../mcp';
 import { AgentController, ToolActor } from '../core';
 import { llmController } from '../llm';
 import type { AgentChunk } from './proto';
-import { TaskCtx, type TaskReq } from './handlers';
-import { saveSessionHistory } from './handlers/history/save';
+import {
+  type GetHistoryReq,
+  TaskCtx,
+  type TaskReq,
+  getHistory,
+  saveSessionHistory,
+} from './handlers';
 
 class Service {
   private readonly toolActor = new ToolActor();
@@ -29,6 +34,10 @@ class Service {
       saveSessionHistory(ctx, agent.stateMachine.getContext());
     });
     return ctx.rs;
+  }
+
+  async getSessionHistory(params: GetHistoryReq) {
+    return await getHistory(params);
   }
 
   async addMcpServer(name: string, url: string): Promise<void> {

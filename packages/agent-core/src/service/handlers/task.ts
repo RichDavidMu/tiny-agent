@@ -15,7 +15,7 @@ export class TaskCtx implements CTX<TaskReq, TaskCtx> {
   private latestChunk!: Exclude<AgentChunk, StatusBlock>;
   private assistantMessageId = uuid();
   private userMessageId = uuid();
-  private sessionId: string;
+  private readonly sessionId: string;
 
   constructor({ req }: { req: TaskReq }) {
     const { sessionId = uuid() } = req;
@@ -36,6 +36,7 @@ export class TaskCtx implements CTX<TaskReq, TaskCtx> {
         model: '',
         parent: this.userMessageId,
         content: [],
+        sessionId,
       },
     });
   }

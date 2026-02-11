@@ -45,6 +45,7 @@ export interface MessageStart extends Base {
     model: string;
     parent: string;
     content: [];
+    sessionId: string;
   };
 }
 
