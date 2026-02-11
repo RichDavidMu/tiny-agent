@@ -2,11 +2,14 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import {
   type ContentBlockDelta,
   type ContentBlockStart,
+  type ContentBlockTaskStart,
   type ContentBlockTaskStatusDelta,
   type ContentBlockTaskToolResultDelta,
   type ContentBlockTaskToolUseDelta,
   type ContentBlockTextDelta,
+  type ContentBlockTextStart,
   type MessageStart,
+  type TaskReq,
   service,
 } from 'agent-core';
 import { webLogger } from '@tini-agent/utils';
@@ -17,10 +20,14 @@ import { TaskNode } from '@/stream/node/contentNodes/taskNode';
 
 class Stream {
   loading = false;
+  params: TaskReq | null = null;
   constructor() {
-    makeAutoObservable(this);
+    makeAutoObservable(this, {
+      params: false,
+    });
   }
   async task(params: { input: string }) {
+    this.params = params;
     this.loading = true;
     try {
       const stream = await service.taskStream(params);
@@ -28,6 +35,7 @@ class Stream {
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
+        webLogger.log(value);
         if (value) {
           switch (value.type) {
             case 'message_start': {
@@ -67,14 +75,17 @@ class Stream {
     switch (contentType) {
       case 'thinking': {
         newContentNode = new ThinkNode();
+        newContentNode.update(chunk as ContentBlockTextStart);
         break;
       }
       case 'task': {
         newContentNode = new TaskNode();
+        newContentNode.update(chunk as ContentBlockTaskStart);
         break;
       }
       case 'text': {
         newContentNode = new TextNode();
+        newContentNode.update(chunk as ContentBlockTextStart);
         break;
       }
     }
@@ -134,6 +145,7 @@ class Stream {
   handleMessageStart(chunk: MessageStart) {
     const { id, parent } = chunk.message;
     const userNode = new Node({ id: parent, role: 'user' });
+    userNode.content.push(new TextNode({ text: this.params!.input }));
     const assistantNode = new Node({ id, role: 'assistant' });
     tree.appendNode(userNode);
     tree.appendNode(assistantNode);

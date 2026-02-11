@@ -37,7 +37,7 @@ export type MessageContentProps = {
 
 const MessageContent = ({ children, className }: MessageContentProps) => {
   const classNames = cn(
-    'rounded-lg p-2 text-foreground bg-secondary prose break-words whitespace-normal',
+    'rounded-lg p-2 text-foreground prose break-words whitespace-normal',
     className,
   );
 

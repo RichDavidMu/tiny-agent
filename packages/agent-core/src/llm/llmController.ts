@@ -7,8 +7,8 @@ class LLMController {
   public toolLLM: LLM;
 
   constructor() {
-    this.toolLLM = new LLM({ model_id: DEFAULT_MODEL });
     this.planLLM = new LLM({ model_id: DEFAULT_MODEL });
+    this.toolLLM = this.planLLM;
   }
   get ready() {
     return this.planLLM.ready && this.toolLLM.ready;

@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid';
 import type { AgentChunk, CTX, MessageStop, StatusBlock } from '../proto';
 import type { AgentState, ICallToolResult, StepSchema, TaskSchema } from '../../types';
 
-interface TaskReq {
+export interface TaskReq {
   input: string;
 }
 
@@ -29,7 +29,7 @@ export class TaskCtx implements CTX<TaskReq, TaskCtx> {
         type: 'message',
         role: 'assistant',
         model: '',
-        parent: '0',
+        parent: uuid(),
         content: [],
       },
     });

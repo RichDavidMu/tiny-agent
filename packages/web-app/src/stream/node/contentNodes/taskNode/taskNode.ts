@@ -4,7 +4,7 @@ import type {
   TaskContentBlock,
   TaskSchema,
 } from 'agent-core';
-import { makeAutoObservable, observable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 import { BaseContentNode } from '../base.ts';
 import { Step } from './step.ts';
 
@@ -16,7 +16,12 @@ export class TaskNode extends BaseContentNode {
   steps = observable.map<string, Step>();
   constructor() {
     super();
-    makeAutoObservable(this);
+    makeObservable(this, {
+      status: observable,
+      steps: observable,
+      stepList: computed,
+      update: action,
+    });
   }
 
   get stepList() {

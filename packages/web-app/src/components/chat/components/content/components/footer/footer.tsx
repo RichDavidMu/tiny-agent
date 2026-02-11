@@ -21,7 +21,7 @@ const Footer = observer(() => {
       disabled={stream.loading}
       className="mt-4"
     >
-      <PromptInputTextarea placeholder="Type your message here..." />
+      <PromptInputTextarea placeholder="Type your prompt here..." />
       <PromptInputActions className="justify-end px-2 pb-2">
         <PromptInputAction
           tooltip={'send message'}
@@ -35,7 +35,11 @@ const Footer = observer(() => {
             className="h-9 w-9 rounded-full"
           >
             {stream.loading ? (
-              <Loader variant="circular" size="sm" className="border-primary-foreground" />
+              <Loader
+                variant="circular"
+                size="sm"
+                className="border-primary-foreground border-t-transparent"
+              />
             ) : (
               <Send className="h-4 w-4" />
             )}

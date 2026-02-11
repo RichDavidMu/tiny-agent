@@ -1,13 +1,17 @@
 import type { TextContentBlock } from 'agent-core';
-import { makeAutoObservable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 import { BaseContentNode } from '@/stream/node/contentNodes/base.ts';
 
 export class TextNode extends BaseContentNode {
   type = 'text' as const;
   text = '';
-  constructor() {
+  constructor({ text }: { text: string } = { text: '' }) {
     super();
-    makeAutoObservable(this);
+    this.text = text;
+    makeObservable(this, {
+      text: observable,
+      update: action,
+    });
   }
   update(chunk: TextContentBlock) {
     this.text += chunk.content_block.text;

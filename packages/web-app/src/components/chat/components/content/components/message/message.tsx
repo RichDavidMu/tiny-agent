@@ -2,6 +2,7 @@ import { observer } from 'mobx-react-lite';
 import type { Node } from '@/stream/node';
 import { MessageAvatar, Message as MessageBox, MessageContent } from '@/components/ui/message.tsx';
 import { cn } from '@/lib/utils.ts';
+import { Loader } from '@/components/ui/loader.tsx';
 import { ContentBlock } from './contentBlock.tsx';
 
 export const Message = observer(({ node }: { node: Node }) => {
@@ -21,6 +22,7 @@ export const Message = observer(({ node }: { node: Node }) => {
         {node.content.map((c) => (
           <ContentBlock content={c} key={c.id} />
         ))}
+        {node.isEmpty && <Loader variant="typing" size="md" />}
       </MessageContent>
     </MessageBox>
   );

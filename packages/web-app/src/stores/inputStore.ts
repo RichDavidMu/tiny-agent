@@ -16,7 +16,7 @@ export class InputStore {
       toast.info('please input your prompt');
       return;
     }
-    if (!stream.loading) {
+    if (stream.loading) {
       toast.info('task running, please wait for a while');
       return;
     }
