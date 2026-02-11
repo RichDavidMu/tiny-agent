@@ -15,4 +15,4 @@ class LLMController {
   }
 }
 
-export default new LLMController();
+export const llmController = new LLMController();

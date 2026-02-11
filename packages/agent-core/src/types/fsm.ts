@@ -1,5 +1,5 @@
 import type { ChatCompletionTool } from '@mlc-ai/web-llm';
-import type { ICallToolResult } from './tools.ts';
+import type { ToolStepResult } from './tools.ts';
 import type { PlanSchema, StepSchema, TaskSchema } from './planer.ts';
 
 /**
@@ -50,7 +50,7 @@ export interface ToolExecutionContext {
  * Tool execution result
  */
 export interface ToolExecutionResult {
-  result: ICallToolResult;
+  result: ToolStepResult;
   step: StepSchema;
   tool: ChatCompletionTool | null;
 }

@@ -1,17 +1,15 @@
 import { v4 as uuidv4 } from 'uuid';
 import { agentLogger } from '@tini-agent/utils';
-import type { PlanSchema, RethinkRes } from '../types/planer.ts';
-import { createThinkingContentTransform } from '../llm/transformers/thinkingContentTransform.ts';
+import { AgentState, type PlanSchema, type RethinkRes, type StateContext } from '../types';
 import {
   type StructuredChunk,
   createContentStructParseTransform,
-} from '../llm/transformers/contentStructParseTransform.ts';
+  createThinkingContentTransform,
+  llmController,
+} from '../llm';
 import { persistResult } from '../storage/persistResult.ts';
 import { agentDb } from '../storage/db.ts';
-import { AgentState, type StateContext } from '../types/fsm.ts';
-import llmController from '../llm/llmController.ts';
-import type { TaskCtx } from '../service/handlers/task.ts';
-import type { MessageStop } from '../service/proto/task.ts';
+import type { MessageStop, TaskCtx } from '../service';
 import { PlanSystemPrompt, PlanUserPrompt } from './prompt/planPrompt.ts';
 import type { ToolActor } from './toolActor.ts';
 import { type IPolicy, Policy } from './policy.ts';
@@ -175,7 +173,6 @@ export class AgentController {
     nextStep.result_file_id = `file-${uuidv4()}`;
     await persistResult(result, nextStep, context.currentTask.task_uuid, tool);
     // Update context with current step
-    nextStep.status = result.isError ? 'error' : 'done';
     if (context.currentTask.steps.every((s) => s.status !== 'pending')) {
       if (context.currentTask.steps.find((s) => s.status === 'error')) {
         context.currentTask.status = 'error';

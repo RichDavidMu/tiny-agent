@@ -1,11 +1,10 @@
 import { remove } from 'lodash';
-import type { ICallToolResult } from '../types/tools.ts';
+import type { ToolExecutionContext, ToolExecutionResult, ToolStepResult } from '../types';
 import type { ToolCall } from '../tools/toolCall.ts';
-import type { ToolExecutionContext, ToolExecutionResult } from '../types/fsm.ts';
 import { WritingExpert } from '../tools/writingExpert.ts';
 import { JavascriptExecutor } from '../tools/javascriptExecutor.ts';
 import { CodeExpert } from '../tools/codeExpert.ts';
-import type { TaskCtx } from '../service/handlers/task.ts';
+import type { TaskCtx } from '../service';
 
 /**
  * Tool Actor - executes tools and manages tool lifecycle
@@ -58,40 +57,48 @@ export class ToolActor {
 
     // Find the tool
     const tool = this.tools.find((t) => t.tool.name === step.tool_name);
-    let result: ICallToolResult;
+    let stepResult: ToolStepResult;
     if (!tool) {
       // Tool not found
-      result = {
-        isError: true,
-        content: [{ text: `工具不存在: ${step.tool_name}`, type: 'text' }],
+      stepResult = {
+        result: {
+          isError: true,
+          content: [{ text: `工具不存在: ${step.tool_name}`, type: 'text' }],
+        },
+        shouldAct: false,
+        input: null,
       };
     } else {
       try {
         // Execute the tool
-        result = await tool.step(step, task, plan, ctx);
+        stepResult = await tool.step(ctx, step, task, plan);
       } catch (error) {
         // Tool execution error
-        result = {
-          isError: true,
-          content: [
-            {
-              text: `工具执行错误: ${error instanceof Error ? error.message : String(error)}`,
-              type: 'text',
-            },
-          ],
+        stepResult = {
+          result: {
+            isError: true,
+            content: [
+              {
+                text: `工具执行错误: ${error instanceof Error ? error.message : String(error)}`,
+                type: 'text',
+              },
+            ],
+          },
+          shouldAct: false,
+          input: null,
         };
       }
     }
 
     // Update step status
-    if (result.isError) {
+    if (stepResult.result.isError) {
       step.status = 'error';
     } else {
       step.status = 'done';
     }
 
     return {
-      result,
+      result: stepResult,
       step,
       tool: tool ? tool.tool.toParams() : null,
     };

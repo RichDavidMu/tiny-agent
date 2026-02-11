@@ -1,8 +1,8 @@
-import llmController from '../llm/llmController.ts';
 import { MCPClientHost } from '../mcp';
 import { AgentController, ToolActor } from '../core';
+import { llmController } from '../llm';
 import type { AgentChunk } from './proto';
-import { TaskCtx } from './handlers/task.ts';
+import { TaskCtx } from './handlers';
 
 class Service {
   private readonly toolActor = new ToolActor();

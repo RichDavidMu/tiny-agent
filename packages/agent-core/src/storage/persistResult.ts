@@ -1,7 +1,6 @@
 import type { ChatCompletionTool } from '@mlc-ai/web-llm';
 import { agentLogger } from '@tini-agent/utils';
-import type { StepSchema } from '../types/planer.ts';
-import type { ICallToolResult } from '../types/tools.ts';
+import type { StepSchema, ToolStepResult } from '../types';
 import { agentDb } from './db.ts';
 
 /**
@@ -10,11 +9,12 @@ import { agentDb } from './db.ts';
  * - If failed: only records to toolResult table without saving file
  */
 export async function persistResult(
-  result: ICallToolResult,
+  stepResult: ToolStepResult,
   step: StepSchema,
   taskId: string,
   tool: ChatCompletionTool | null,
 ): Promise<void> {
+  const { result, shouldAct, input } = stepResult;
   const fileName = step.result_file_name;
   const content = result.content[0];
   const isError = result.isError || false;
@@ -65,6 +65,8 @@ export async function persistResult(
     stepGoal: step.step_goal,
     resultFile: step.result_file_name,
     fileId: step.result_file_id!,
+    shouldAct,
+    input,
     tool,
   });
 }

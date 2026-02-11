@@ -4,6 +4,7 @@ import type { AgentState, ICallToolResult, StepSchema, TaskSchema } from '../../
 
 export interface TaskReq {
   input: string;
+  parent?: string;
 }
 
 export class TaskCtx implements CTX<TaskReq, TaskCtx> {

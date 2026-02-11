@@ -12,16 +12,8 @@ export class ToolResultTable {
   async create(input: CreateToolResultInput): Promise<ToolResultRecord> {
     const db = await this.getDb();
     const record: ToolResultRecord = {
-      id: input.id,
-      stepId: input.stepId,
-      taskId: input.taskId,
-      result: input.result,
-      isError: input.isError,
-      resultFile: input.resultFile,
-      fileId: input.fileId,
-      stepGoal: input.stepGoal,
       createdAt: Date.now(),
-      tool: input.tool,
+      ...input,
     };
 
     await new Promise<void>((resolve, reject) => {

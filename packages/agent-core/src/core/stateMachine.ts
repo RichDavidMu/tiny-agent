@@ -1,5 +1,5 @@
 import { agentLogger } from '@tini-agent/utils';
-import { AgentState, type StateContext } from '../types/fsm.ts';
+import { AgentState, type StateContext } from '../types';
 
 /**
  * State machine for agent execution
