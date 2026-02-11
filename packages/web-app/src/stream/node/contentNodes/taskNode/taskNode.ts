@@ -14,12 +14,13 @@ export class TaskNode extends BaseContentNode {
   taskUuid = '';
   status: TaskSchema['status'] = 'pending';
   steps = observable.map<string, Step>();
-  get stepList() {
-    return Array.from(this.steps.values());
-  }
   constructor() {
     super();
     makeAutoObservable(this);
+  }
+
+  get stepList() {
+    return Array.from(this.steps.values());
   }
   update(chunk: TaskContentBlock) {
     if (chunk.type === 'content_block_start') {

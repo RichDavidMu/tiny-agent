@@ -115,7 +115,7 @@ export interface DeltaTaskContentToolUse extends ContentBase {
   type: 'tool_use';
   task_uuid: string;
   step_uuid: string;
-  input: string;
+  input: Record<string, any>;
   should_act: boolean;
 }
 

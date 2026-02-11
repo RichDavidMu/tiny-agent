@@ -1,13 +1,15 @@
+import { observer } from 'mobx-react-lite';
 import type { ContentNode } from '@/stream/node';
 import { Markdown } from '@/components/ui/markdown.tsx';
 import { Reasoning, ReasoningContent, ReasoningTrigger } from '@/components/ui/reasoning.tsx';
+import { TaskContent } from './TaskContent';
 
-export function ContentBlock({ content }: { content: ContentNode }) {
+export const ContentBlock = observer(({ content }: { content: ContentNode }) => {
   if (content.type === 'text') {
     return <Markdown>{content.text}</Markdown>;
   }
   if (content.type === 'task') {
-    return <Markdown>{content.text}</Markdown>;
+    return <TaskContent content={content} />;
   }
   if (content.type === 'thinking') {
     return (
@@ -22,4 +24,4 @@ export function ContentBlock({ content }: { content: ContentNode }) {
       </Reasoning>
     );
   }
-}
+});

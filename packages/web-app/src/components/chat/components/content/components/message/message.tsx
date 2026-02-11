@@ -1,9 +1,10 @@
+import { observer } from 'mobx-react-lite';
 import type { Node } from '@/stream/node';
 import { MessageAvatar, Message as MessageBox, MessageContent } from '@/components/ui/message.tsx';
 import { cn } from '@/lib/utils.ts';
-import { ContentBlock } from '@/components/chat/components/content/components/message/contentBlock.tsx';
+import { ContentBlock } from './contentBlock.tsx';
 
-export function Message({ node }: { node: Node }) {
+export const Message = observer(({ node }: { node: Node }) => {
   return (
     <MessageBox className={cn(node.role === 'user' ? 'flex-row-reverse' : 'flex-row')}>
       <MessageAvatar
@@ -23,4 +24,4 @@ export function Message({ node }: { node: Node }) {
       </MessageContent>
     </MessageBox>
   );
-}
+});

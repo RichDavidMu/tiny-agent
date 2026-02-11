@@ -2,9 +2,13 @@ import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type { ChatCompletionAssistantMessageParam } from '@mlc-ai/web-llm';
 import { agentLogger } from '@tini-agent/utils';
 import { agentDb } from '../storage/db.ts';
-import type { ToolCallResponse } from '../types/llm.ts';
-import type { PlanSchema, StepSchema, TaskSchema } from '../types/planer.ts';
-import type { ICallToolResult } from '../types/tools.ts';
+import type {
+  ICallToolResult,
+  PlanSchema,
+  StepSchema,
+  TaskSchema,
+  ToolCallResponse,
+} from '../types';
 import llmController from '../llm/llmController.ts';
 import type { LLM } from '../llm/llm.ts';
 import type { TaskCtx } from '../service/handlers/task.ts';
@@ -30,7 +34,7 @@ export abstract class ToolCall {
       toolContext = await this.buildToolCallContext(step, plan);
     }
     const shouldAct = await this.think(step, task);
-    ctx.onToolUse(step, task, shouldAct, JSON.stringify(this.toolCall || {}, undefined, 2));
+    ctx.onToolUse(step, task, shouldAct, this.toolCall || {});
     agentLogger.debug(
       'shouldAct\n',
       shouldAct,

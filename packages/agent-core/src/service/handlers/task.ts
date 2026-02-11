@@ -64,7 +64,12 @@ export class TaskCtx implements CTX<TaskReq, TaskCtx> {
     });
   }
 
-  public onToolUse(step: StepSchema, task: TaskSchema, shouldAct: boolean, toolCall: string): void {
+  public onToolUse(
+    step: StepSchema,
+    task: TaskSchema,
+    shouldAct: boolean,
+    toolCall: Record<string, any>,
+  ): void {
     this.write({
       type: 'content_block_delta',
       index: 0,
