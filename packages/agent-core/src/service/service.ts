@@ -53,6 +53,11 @@ class Service {
     await this.mcpHost.removeServer(name);
   }
 
+  async getMcpServers() {
+    await this.mcpHost.waitForReady();
+    return this.mcpHost.getServers();
+  }
+
   enableTool(name: string): void {
     this.toolActor.enableTool(name);
   }

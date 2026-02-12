@@ -1,5 +1,5 @@
 // MCP 客户端管理器 - 支持多个 MCP 服务器
-import { remove } from 'lodash';
+import { remove, unionBy } from 'lodash';
 import type { ToolActor } from '../core';
 import type { MCPClientOptions, MCPServerConfig } from './types.ts';
 import { MCPClient } from './client.ts';
@@ -37,18 +37,23 @@ export class MCPClientHost {
   private config: McpConfigType = { servers: [] };
   private readonly toolActor: ToolActor;
   private clients: Map<string, MCPClient> = new Map();
+  private readonly initPromise: Promise<void>;
 
   constructor(toolActor: ToolActor) {
     this.toolActor = toolActor;
-    this.init();
+    this.initPromise = this.init();
   }
 
   async init() {
     const cache = getConfigCache();
-    cache.servers.push(...this.builtinServer);
+    cache.servers = unionBy(cache.servers, this.builtinServer, 'name');
     for (let i = 0; i < cache.servers.length; i++) {
       await this.addServer(cache.servers[i]);
     }
+  }
+
+  async waitForReady(): Promise<void> {
+    await this.initPromise;
   }
 
   async addServer(config: MCPServerConfig, options?: MCPClientOptions): Promise<MCPClient> {
@@ -73,5 +78,9 @@ export class MCPClientHost {
       remove(this.config.servers, (s) => s.name === name);
       setConfigCache(this.config);
     }
+  }
+
+  getServers(): MCPServerConfig[] {
+    return this.config.servers;
   }
 }
