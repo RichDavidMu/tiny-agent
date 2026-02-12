@@ -11,7 +11,7 @@ import type { TaskCtx } from '../task';
 export async function saveHistory(sessionId: string, nodes: SessionNode[]): Promise<void> {
   const existing = await agentDb.session.get(sessionId);
   if (existing) {
-    await agentDb.session.update(sessionId, { nodes });
+    await agentDb.session.update(sessionId, { nodes: [...existing.nodes, ...nodes] });
   } else {
     const firstUserNode = nodes.find((n) => n.role === 'user');
     await agentDb.session.create({
