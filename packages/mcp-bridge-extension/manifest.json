@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "MCP Bridge",
+  "name": "Tiny-Agent MCP Bridge",
   "version": "0.1.1",
   "permissions": ["scripting"],
   "host_permissions": ["<all_urls>"],
