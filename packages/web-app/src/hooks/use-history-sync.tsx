@@ -10,5 +10,5 @@ export const useHistorySync = () => {
   }, [navigate]);
   useEffect(() => {
     rootStore.historyStore.setParams(params);
-  }, [params.sessionId]);
+  }, [params]);
 };
