@@ -1,6 +1,6 @@
-# OpenManusWeb
-A completely front-end driven AI agent project, requiring no server resources.
+# tiny-agent
 
+A completely front-end driven AI agent project, requiring no server resources.
 
 ## For Claude Code
 

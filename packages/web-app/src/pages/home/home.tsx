@@ -8,7 +8,7 @@ function Home() {
       {/* Hero Section */}
       <section className="flex flex-col items-center justify-center space-y-4 py-24 text-center md:py-32">
         <h1 className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-4xl font-extrabold text-transparent sm:text-5xl md:text-6xl lg:text-7xl">
-          OpenManus
+          tiny-agent
         </h1>
         <p className="max-w-[750px] text-lg text-muted-foreground sm:text-xl">
           A completely front-end driven AI agent, powered by WebLLM

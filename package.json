@@ -1,14 +1,14 @@
 {
-  "name": "open-manus-web",
+  "name": "tiny-agent",
   "version": "1.0.0",
   "description": "A completely front-end driven AI agent project, requiring no server resources.",
-  "homepage": "https://github.com/RichDavidMu/OpenManusWeb#readme",
+  "homepage": "https://github.com/muchenwei/tiny-agent#readme",
   "bugs": {
-    "url": "https://github.com/RichDavidMu/OpenManusWeb/issues"
+    "url": "https://github.com/muchenwei/tiny-agent/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RichDavidMu/OpenManusWeb.git"
+    "url": "git+https://github.com/muchenwei/tiny-agent.git"
   },
   "license": "Apache-2.0",
   "author": "David Mu",
