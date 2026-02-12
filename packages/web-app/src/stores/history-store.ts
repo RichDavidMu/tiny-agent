@@ -14,7 +14,7 @@ export class HistoryStore {
       navigate: false,
     });
     reaction(
-      () => this.params.sessionId,
+      () => this.params?.sessionId,
       (sessionId) => {
         rootStore.sessionStore.setSessionId(sessionId);
       },

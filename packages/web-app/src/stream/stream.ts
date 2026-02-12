@@ -15,6 +15,8 @@ import {
 import { webLogger } from '@tini-agent/utils';
 import tree from '@/stream/tree.ts';
 import { type ContentNode, Node, TaskNode, TextNode, ThinkNode } from '@/stream/node';
+import rootStore from '@/stores/root-store.ts';
+import { selectSession } from '@/lib/session.ts';
 
 class Stream {
   loading = false;
@@ -142,11 +144,14 @@ class Stream {
 
   handleMessageStart(chunk: MessageStart) {
     const { id, parent } = chunk.message;
+    const { addSession } = rootStore.sessionStore;
     const userNode = new Node({ id: parent, role: 'user' });
     userNode.content.push(new TextNode({ text: this.params!.input, type: 'text' }));
     const assistantNode = new Node({ id, role: 'assistant' });
     tree.appendNode(userNode);
     tree.appendNode(assistantNode);
+    addSession({ id: chunk.message.sessionId, name: this.params!.input });
+    selectSession(chunk.message.sessionId);
   }
 }
 

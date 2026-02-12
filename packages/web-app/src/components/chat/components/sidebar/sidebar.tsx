@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { Plus, Settings } from 'lucide-react';
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import {
   Sidebar,
   SidebarContent,
@@ -13,9 +13,10 @@ import {
 } from '@/components/ui/sidebar.tsx';
 import { Button } from '@/components/ui/button.tsx';
 import rootStore from '@/stores/root-store.ts';
+import { selectSession } from '@/lib/session.ts';
+import stream from '@/stream/stream.ts';
 
 const MySidebar = observer(() => {
-  const navigate = useNavigate();
   const { sessionStore } = rootStore;
 
   useEffect(() => {
@@ -23,11 +24,19 @@ const MySidebar = observer(() => {
   }, []);
 
   const handleNewSession = () => {
-    navigate('/chat');
+    if (stream.loading) {
+      toast('cannot create new task now');
+      return;
+    }
+    selectSession(undefined);
   };
 
   const handleSessionClick = (sessionId: string) => {
-    navigate(`/chat/${sessionId}`);
+    if (stream.loading) {
+      toast('cannot switch session now');
+      return;
+    }
+    selectSession(sessionId);
   };
 
   return (
