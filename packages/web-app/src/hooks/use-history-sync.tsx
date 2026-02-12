@@ -5,11 +5,10 @@ import rootStore from '@/stores/root-store.ts';
 export const useHistorySync = () => {
   const navigate = useNavigate();
   const params = useParams();
-  console.log(params);
   useEffect(() => {
     rootStore.historyStore.setNavigate(navigate);
   }, [navigate]);
   useEffect(() => {
-    rootStore.historyStore.setSessionId(params.sessionId);
+    rootStore.historyStore.setParams(params);
   }, [params.sessionId]);
 };

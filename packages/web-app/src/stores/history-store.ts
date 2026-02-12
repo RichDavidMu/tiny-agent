@@ -1,9 +1,10 @@
-import type { NavigateFunction } from 'react-router-dom';
-import { makeAutoObservable } from 'mobx';
+import type { NavigateFunction, Params } from 'react-router-dom';
+import { makeAutoObservable, reaction } from 'mobx';
+import rootStore from '@/stores/root-store.ts';
 
 export class HistoryStore {
   public navigate: NavigateFunction | (() => void) = () => {};
-  sessionId: string | undefined;
+  public params!: Params<string>;
   setNavigate(n: NavigateFunction) {
     this.navigate = n;
   }
@@ -12,8 +13,14 @@ export class HistoryStore {
       setNavigate: false,
       navigate: false,
     });
+    reaction(
+      () => this.params.sessionId,
+      (sessionId) => {
+        rootStore.sessionStore.setSessionId(sessionId);
+      },
+    );
   }
-  setSessionId(s: string | undefined) {
-    this.sessionId = s;
+  setParams(p: Params<string>) {
+    this.params = p;
   }
 }
