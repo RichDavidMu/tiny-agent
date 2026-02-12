@@ -62,6 +62,7 @@ async function transformTaskContent(task: SessionTaskContent): Promise<HistoryCo
         input: toolResult.input,
         shouldAct: toolResult.shouldAct,
         result: toolResult.result,
+        stepId: toolResult.stepId,
         attachment: {
           id: toolResult.fileId,
           name: toolResult.resultFile,

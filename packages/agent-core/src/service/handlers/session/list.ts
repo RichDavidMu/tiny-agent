@@ -1,6 +1,7 @@
 import { agentDb } from '../../../storage';
+import type { SessionListResponse } from '../../proto';
 
-export async function getSessionListHandler() {
+export async function getSessionListHandler(): Promise<SessionListResponse> {
   const records = await agentDb.session.list();
-  return records.map((r) => r.id);
+  return { list: records.map((r) => ({ id: r.id, name: r.name })) };
 }

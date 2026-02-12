@@ -1,5 +1,4 @@
 import type { ChatCompletionTool } from '@mlc-ai/web-llm';
-import type { DeltaTaskContentToolResult } from '../service';
 
 export type FileRecord = {
   createdAt: number;
@@ -39,6 +38,7 @@ export type SessionRecord = {
 
 export type CreateSessionInput = {
   id: string; // session_id
+  name: string;
   nodes: SessionNode[];
 };
 
@@ -74,5 +74,4 @@ export type SessionStepContent = {
   step_goal: string;
   tool_name: string;
   status: 'pending' | 'done' | 'error';
-  attachment: DeltaTaskContentToolResult['attachment'];
 };

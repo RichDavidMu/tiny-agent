@@ -6,6 +6,7 @@ import type {
   SessionTextContent,
   SessionThinkingContent,
 } from '../../storage';
+import type { DeltaTaskContentToolResult } from './task.ts';
 
 export type HistoryResponse = {
   id: string; // session_id
@@ -32,4 +33,5 @@ export interface HistoryTaskContent extends SessionTaskContent {
 export interface HistoryStepContent
   extends
     SessionStepContent,
-    Pick<CreateToolResultInput, 'shouldAct' | 'input' | 'result' | 'stepId'> {}
+    Pick<CreateToolResultInput, 'shouldAct' | 'input' | 'result' | 'stepId'>,
+    Pick<DeltaTaskContentToolResult, 'attachment'> {}

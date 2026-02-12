@@ -1,4 +1,9 @@
-import type { SessionContentNode, SessionNode, SessionTaskContent } from '../../../storage';
+import type {
+  SessionContentNode,
+  SessionNode,
+  SessionTaskContent,
+  SessionTextContent,
+} from '../../../storage';
 import { agentDb } from '../../../storage';
 import type { StateContext } from '../../../types';
 import type { TaskCtx } from '../task';
@@ -8,7 +13,12 @@ export async function saveHistory(sessionId: string, nodes: SessionNode[]): Prom
   if (existing) {
     await agentDb.session.update(sessionId, { nodes });
   } else {
-    await agentDb.session.create({ id: sessionId, nodes });
+    const firstUserNode = nodes.find((n) => n.role === 'user');
+    await agentDb.session.create({
+      id: sessionId,
+      nodes,
+      name: firstUserNode ? (firstUserNode.content[0] as SessionTextContent).text : sessionId,
+    });
   }
 }
 

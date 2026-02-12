@@ -1,12 +1,12 @@
 import { makeAutoObservable, observable, reaction } from 'mobx';
-import { service } from 'agent-core';
+import { type SessionItem, service } from 'agent-core';
 import { toast } from 'sonner';
 import tree from '@/stream/tree.ts';
 import rootStore from '@/stores/root-store.ts';
 
 export class SessionStore {
   sessionId: string | undefined;
-  sessionList = observable.array<string>([]);
+  sessionList = observable.array<SessionItem>([]);
   constructor() {
     makeAutoObservable(this);
     reaction(
@@ -30,7 +30,7 @@ export class SessionStore {
     this.sessionId = s;
   }
   async getSessions() {
-    const list = await service.getSessionList();
-    this.sessionList.replace(list);
+    const response = await service.getSessionList();
+    this.sessionList.replace(response.list);
   }
 }
