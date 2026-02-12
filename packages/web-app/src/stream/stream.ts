@@ -14,9 +14,7 @@ import {
 } from 'agent-core';
 import { webLogger } from '@tini-agent/utils';
 import tree from '@/stream/tree.ts';
-import { type ContentNode, Node, TextNode } from '@/stream/node';
-import { ThinkNode } from '@/stream/node/contentNodes/thinkNode';
-import { TaskNode } from '@/stream/node/contentNodes/taskNode';
+import { type ContentNode, Node, TaskNode, TextNode, ThinkNode } from '@/stream/node';
 
 class Stream {
   loading = false;
@@ -145,7 +143,7 @@ class Stream {
   handleMessageStart(chunk: MessageStart) {
     const { id, parent } = chunk.message;
     const userNode = new Node({ id: parent, role: 'user' });
-    userNode.content.push(new TextNode({ text: this.params!.input }));
+    userNode.content.push(new TextNode({ text: this.params!.input, type: 'text' }));
     const assistantNode = new Node({ id, role: 'assistant' });
     tree.appendNode(userNode);
     tree.appendNode(assistantNode);

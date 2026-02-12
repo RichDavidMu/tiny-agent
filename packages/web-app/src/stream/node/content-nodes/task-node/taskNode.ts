@@ -1,6 +1,7 @@
 import type {
   ContentBlockTaskToolResultDelta,
   ContentBlockTaskToolUseDelta,
+  HistoryTaskContent,
   TaskContentBlock,
   TaskSchema,
 } from 'agent-core';
@@ -14,13 +15,34 @@ export class TaskNode extends BaseContentNode {
   taskUuid = '';
   status: TaskSchema['status'] = 'pending';
   steps = observable.map<string, Step>();
-  constructor() {
+  constructor(initParams?: HistoryTaskContent) {
     super();
     makeObservable(this, {
       status: observable,
       steps: observable,
       stepList: computed,
       update: action,
+    });
+    if (!initParams) return;
+    const { task_goal, task_uuid, status, steps } = initParams;
+    this.taskGoal = task_goal;
+    this.taskUuid = task_uuid;
+    this.status = status;
+    steps.forEach((s) => {
+      const newStep = new Step({
+        meta: {
+          status: s.status,
+          step_uuid: s.step_uuid,
+          step_id: s.stepId,
+          step_goal: s.step_goal,
+          result_file_id: s.attachment?.id || '',
+          result_file_name: s.attachment?.name || '',
+          tool_name: s.tool_name,
+          result_summary_hint: '',
+        },
+        initParams: s,
+      });
+      this.steps.set(s.step_uuid, newStep);
     });
   }
 

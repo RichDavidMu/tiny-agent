@@ -20,6 +20,7 @@
     "@tini-agent/utils": "workspace:*",
     "@types/lodash": "^4.17.23",
     "agent-core": "workspace:*",
+    "ahooks": "^3.9.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lodash": "^4.17.23",

@@ -8,7 +8,10 @@ function App() {
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
-        <Route path="chat" element={<Chat />} />
+        <Route path="chat">
+          <Route index element={<Chat />} />
+          <Route path=":sessionId" element={<Chat />} />
+        </Route>
       </Route>
     </Routes>
   );

@@ -1,11 +1,33 @@
 import { observer } from 'mobx-react-lite';
+import { useAsyncEffect } from 'ahooks';
+import { service } from 'agent-core';
+import { toast } from 'sonner';
+import { useEffect } from 'react';
 import { useSidebar } from '@/components/ui/sidebar.tsx';
 import Footer from '@/components/chat/components/content/components/footer/footer.tsx';
 import tree from '@/stream/tree.ts';
 import { Message } from '@/components/chat/components/content/components/message/message.tsx';
+import rootStore from '@/stores/root-store.ts';
 
 const Content = observer(() => {
+  const { historyStore } = rootStore;
+  const { sessionId, navigate } = historyStore;
   const { isMobile } = useSidebar();
+
+  useEffect(() => () => tree.reset(), []);
+  useAsyncEffect(async () => {
+    tree.reset();
+    if (sessionId) {
+      const history = await service.getSessionHistory({ sessionId });
+      if (!history) {
+        toast.error('invalidate session');
+        navigate('/chat');
+        return;
+      }
+      tree.generateFromSession(history);
+    }
+  }, [sessionId]);
+
   return (
     <div
       data-sidebar={isMobile ? 'mobile' : 'desktop'}

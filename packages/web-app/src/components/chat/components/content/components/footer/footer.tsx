@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/prompt-input.tsx';
 import { Button } from '@/components/ui/button.tsx';
 import { Loader } from '@/components/ui/loader.tsx';
-import rootStore from '@/stores/rootStore.ts';
+import rootStore from '@/stores/root-store.ts';
 import stream from '@/stream/stream.ts';
 
 const Footer = observer(() => {

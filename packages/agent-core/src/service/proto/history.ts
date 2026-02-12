@@ -30,4 +30,6 @@ export interface HistoryTaskContent extends SessionTaskContent {
 }
 
 export interface HistoryStepContent
-  extends SessionStepContent, Pick<CreateToolResultInput, 'shouldAct' | 'input' | 'result'> {}
+  extends
+    SessionStepContent,
+    Pick<CreateToolResultInput, 'shouldAct' | 'input' | 'result' | 'stepId'> {}

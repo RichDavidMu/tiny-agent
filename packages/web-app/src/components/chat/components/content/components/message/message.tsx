@@ -3,7 +3,7 @@ import type { Node } from '@/stream/node';
 import { MessageAvatar, Message as MessageBox, MessageContent } from '@/components/ui/message.tsx';
 import { cn } from '@/lib/utils.ts';
 import { Loader } from '@/components/ui/loader.tsx';
-import { ContentBlock } from './contentBlock.tsx';
+import { ContentBlock } from './content-block.tsx';
 
 export const Message = observer(({ node }: { node: Node }) => {
   return (

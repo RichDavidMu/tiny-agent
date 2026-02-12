@@ -1,2 +1,2 @@
 export * from './node.ts';
-export * from './contentNodes';
+export * from './content-nodes';

@@ -1,5 +1,6 @@
 import { makeAutoObservable } from 'mobx';
-import { Node } from '@/stream/node/node.ts';
+import { type HistoryResponse } from 'agent-core';
+import { Node, TaskNode, TextNode, ThinkNode } from '@/stream/node';
 
 class Tree {
   root = Tree.createRoot();
@@ -17,6 +18,24 @@ class Tree {
       tail = tail.parent;
     }
     return list;
+  }
+
+  generateFromSession(history: HistoryResponse) {
+    history.nodes.forEach((node) => {
+      const newNode = new Node({ id: node.id, role: node.role });
+      node.content.forEach((c) => {
+        if (c.type === 'text') {
+          newNode.content.push(new TextNode(c));
+        }
+        if (c.type === 'thinking') {
+          newNode.content.push(new ThinkNode(c));
+        }
+        if (c.type === 'task') {
+          newNode.content.push(new TaskNode(c));
+        }
+      });
+      this.appendNode(newNode);
+    });
   }
 
   appendNode(node: Node) {

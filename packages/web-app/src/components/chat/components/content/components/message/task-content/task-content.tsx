@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
+import type { TaskNode } from 'src/stream/node/content-nodes/task-node';
 import { Steps, StepsContent, StepsItem, StepsTrigger } from '@/components/ui/steps';
-import type { TaskNode } from '@/stream/node/contentNodes/taskNode';
 import { Tool } from '@/components/ui/tool.tsx';
 
 export const TaskContent = observer(({ content }: { content: TaskNode }) => {

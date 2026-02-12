@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import type { ContentNode } from '@/stream/node';
 import { Markdown } from '@/components/ui/markdown.tsx';
 import { Reasoning, ReasoningContent, ReasoningTrigger } from '@/components/ui/reasoning.tsx';
-import { TaskContent } from './TaskContent';
+import { TaskContent } from './task-content';
 
 export const ContentBlock = observer(({ content }: { content: ContentNode }) => {
   if (content.type === 'text') {

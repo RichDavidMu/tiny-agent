@@ -1,6 +1,7 @@
 import type {
   ContentBlockTaskToolResultDelta,
   ContentBlockTaskToolUseDelta,
+  HistoryStepContent,
   StepSchema,
 } from 'agent-core';
 import { makeAutoObservable } from 'mobx';
@@ -11,9 +12,14 @@ export class Step {
   input?: Record<string, any>;
   shouldAct: boolean | null = null;
   content: string | null = null;
-  constructor({ meta }: { meta: StepSchema }) {
+  constructor({ meta, initParams }: { meta: StepSchema; initParams?: HistoryStepContent }) {
     makeAutoObservable(this);
     this.meta = meta;
+    if (!initParams) return;
+    const { result, shouldAct, input } = initParams;
+    this.content = result;
+    this.shouldAct = shouldAct;
+    this.input = input || undefined;
   }
 
   get output() {

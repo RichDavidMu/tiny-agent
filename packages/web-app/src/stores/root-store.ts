@@ -1,14 +1,17 @@
 import { createContext, useContext } from 'react';
-import { InputStore } from '@/stores/inputStore.ts';
-import { ThemeStore } from './themeStore';
+import { InputStore } from '@/stores/input-store.ts';
+import { HistoryStore } from '@/stores/history-store.ts';
+import { ThemeStore } from './theme-store.ts';
 
 export class RootStore {
   themeStore: ThemeStore;
   inputStore: InputStore;
+  historyStore: HistoryStore;
 
   constructor() {
     this.themeStore = new ThemeStore();
     this.inputStore = new InputStore();
+    this.historyStore = new HistoryStore();
   }
 }
 
