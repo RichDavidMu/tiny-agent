@@ -1,0 +1,13 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "tasks": {
+    "dev": {
+      "dependsOn": ["@mlc-ai/web-llm#build"],
+      "cache": false,
+      "persistent": true
+    },
+    "build": {
+      "outputs": ["lib/**", "dist/**"]
+    }
+  }
+}
