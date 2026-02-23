@@ -1,5 +1,5 @@
 import { makeAutoObservable, observable, reaction } from 'mobx';
-import { type SessionItem, service } from 'agent-core';
+import { type SessionItem, service } from '@tini-agent/agent-core';
 import { toast } from 'sonner';
 import tree from '@/stream/tree.ts';
 import rootStore from '@/stores/root-store.ts';

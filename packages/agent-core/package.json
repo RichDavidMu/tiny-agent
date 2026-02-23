@@ -1,5 +1,5 @@
 {
-  "name": "agent-core",
+  "name": "@tini-agent/agent-core",
   "version": "1.0.0",
   "description": "",
   "main": "./src/index.ts",

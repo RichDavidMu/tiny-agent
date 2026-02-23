@@ -11,7 +11,7 @@ import {
   type MessageStart,
   type TaskReq,
   service,
-} from 'agent-core';
+} from '@tini-agent/agent-core';
 import { webLogger } from '@tini-agent/utils';
 import tree from '@/stream/tree.ts';
 import { type ContentNode, Node, TaskNode, TextNode, ThinkNode } from '@/stream/node';

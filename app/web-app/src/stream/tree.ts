@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import { type HistoryResponse } from 'agent-core';
+import { type HistoryResponse } from '@tini-agent/agent-core';
 import { Node, TaskNode, TextNode, ThinkNode } from '@/stream/node';
 
 class Tree {

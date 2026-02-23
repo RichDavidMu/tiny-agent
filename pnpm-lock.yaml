@@ -62,64 +62,8 @@ importers:
         specifier: ^8.48.1
         version: 8.53.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
 
-  packages/agent-core:
+  app/web-app:
     dependencies:
-      '@mlc-ai/web-llm':
-        specifier: workspace:*
-        version: link:../web-llm
-      '@tini-agent/utils':
-        specifier: workspace:*
-        version: link:../utils
-      lodash:
-        specifier: ^4.17.23
-        version: 4.17.23
-      mcp-bridge-extension:
-        specifier: workspace:*
-        version: link:../mcp-bridge-extension
-      uuid:
-        specifier: ^11.1.0
-        version: 11.1.0
-    devDependencies:
-      '@modelcontextprotocol/sdk':
-        specifier: ^1.25.2
-        version: 1.25.2(hono@4.11.4)(zod@4.3.5)
-      '@types/lodash':
-        specifier: ^4.17.23
-        version: 4.17.23
-
-  packages/mcp-bridge-extension:
-    devDependencies:
-      '@types/archiver':
-        specifier: ^6.0.3
-        version: 6.0.4
-      '@types/chrome':
-        specifier: ^0.0.287
-        version: 0.0.287
-      archiver:
-        specifier: ^7.0.1
-        version: 7.0.1
-      esbuild:
-        specifier: 0.25.0
-        version: 0.25.0
-      typescript:
-        specifier: ^5.8.3
-        version: 5.9.3
-
-  packages/utils:
-    dependencies:
-      debug:
-        specifier: ^4.4.3
-        version: 4.4.3
-    devDependencies:
-      '@types/debug':
-        specifier: ^4.1.12
-        version: 4.1.12
-
-  packages/web-app:
-    dependencies:
-      '@mlc-ai/web-llm':
-        specifier: ^0.2.80
-        version: 0.2.80
       '@radix-ui/react-avatar':
         specifier: ^1.1.11
         version: 1.1.11(@types/react-dom@19.2.3(@types/react@19.2.8))(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -144,15 +88,15 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.2.8
         version: 1.2.8(@types/react-dom@19.2.3(@types/react@19.2.8))(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@tini-agent/agent-core':
+        specifier: workspace:*
+        version: link:../../packages/agent-core
       '@tini-agent/utils':
         specifier: workspace:*
-        version: link:../utils
+        version: link:../../packages/utils
       '@types/lodash':
         specifier: ^4.17.23
         version: 4.17.23
-      agent-core:
-        specifier: workspace:*
-        version: link:../agent-core
       ahooks:
         specifier: ^3.9.6
         version: 3.9.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -250,6 +194,59 @@ importers:
       vite:
         specifier: ^7.2.4
         version: 7.3.1(@types/node@24.10.7)(jiti@1.21.7)(lightningcss@1.30.2)(sass@1.97.2)(tsx@4.21.0)(yaml@2.8.2)
+
+  packages/agent-core:
+    dependencies:
+      '@mlc-ai/web-llm':
+        specifier: workspace:*
+        version: link:../web-llm
+      '@tini-agent/utils':
+        specifier: workspace:*
+        version: link:../utils
+      lodash:
+        specifier: ^4.17.23
+        version: 4.17.23
+      mcp-bridge-extension:
+        specifier: workspace:*
+        version: link:../mcp-bridge-extension
+      uuid:
+        specifier: ^11.1.0
+        version: 11.1.0
+    devDependencies:
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.25.2
+        version: 1.25.2(hono@4.11.4)(zod@4.3.5)
+      '@types/lodash':
+        specifier: ^4.17.23
+        version: 4.17.23
+
+  packages/mcp-bridge-extension:
+    devDependencies:
+      '@types/archiver':
+        specifier: ^6.0.3
+        version: 6.0.4
+      '@types/chrome':
+        specifier: ^0.0.287
+        version: 0.0.287
+      archiver:
+        specifier: ^7.0.1
+        version: 7.0.1
+      esbuild:
+        specifier: 0.25.0
+        version: 0.25.0
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.3
+
+  packages/utils:
+    dependencies:
+      debug:
+        specifier: ^4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@types/debug':
+        specifier: ^4.1.12
+        version: 4.1.12
 
   packages/web-llm:
     dependencies:
@@ -1594,12 +1591,6 @@ packages:
     resolution:
       {
         integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==,
-      }
-
-  '@mlc-ai/web-llm@0.2.80':
-    resolution:
-      {
-        integrity: sha512-Hwy1OCsK5cOU4nKr2wIJ2qA1g595PENtO5f2d9Wd/GgFsj5X04uxfaaJfqED8eFAJOpQpn/DirogdEY/yp5jQg==,
       }
 
   '@mlc-ai/web-runtime@0.23.0-dev1':
@@ -9367,10 +9358,6 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
-
-  '@mlc-ai/web-llm@0.2.80':
-    dependencies:
-      loglevel: 1.9.2
 
   '@mlc-ai/web-runtime@0.23.0-dev1':
     dependencies:

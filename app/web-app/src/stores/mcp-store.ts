@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import { service } from 'agent-core';
+import { service } from '@tini-agent/agent-core';
 
 export interface MCPConfig {
   name: string;
