@@ -4,7 +4,7 @@ import type {
   HistoryTaskContent,
   TaskContentBlock,
   TaskSchema,
-} from 'agent-core';
+} from '@tini-agent/agent-core';
 import { action, computed, makeObservable, observable } from 'mobx';
 import { BaseContentNode } from '../base.ts';
 import { Step } from './step.ts';

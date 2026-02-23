@@ -3,7 +3,7 @@ import type {
   ContentBlockTaskToolUseDelta,
   HistoryStepContent,
   StepSchema,
-} from 'agent-core';
+} from '@tini-agent/agent-core';
 import { makeAutoObservable } from 'mobx';
 import type { ToolPart } from '@/components/ui/tool.tsx';
 

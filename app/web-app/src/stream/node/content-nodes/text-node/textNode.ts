@@ -1,4 +1,4 @@
-import type { HistoryTextContent, TextContentBlock } from 'agent-core';
+import type { HistoryTextContent, TextContentBlock } from '@tini-agent/agent-core';
 import { action, makeObservable, observable } from 'mobx';
 import { BaseContentNode } from '@/stream/node/content-nodes/base.ts';
 

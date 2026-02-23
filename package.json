@@ -15,7 +15,8 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev:web": "turbo run dev --filter=web-app",
+    "dev:web-app": "turbo run dev --filter=web-app",
+    "build:web-app": "turbo run build --filter=web-app",
     "postinstall": "simple-git-hooks",
     "lint": "eslint ."
   },

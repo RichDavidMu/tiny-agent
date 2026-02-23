@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { CONTENT_BLOCK_TYPE, ContentChunk } from 'agent-core';
+import type { CONTENT_BLOCK_TYPE, ContentChunk } from '@tini-agent/agent-core';
 
 export abstract class BaseContentNode {
   id = uuidv4();
