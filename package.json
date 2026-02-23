@@ -17,6 +17,7 @@
   "scripts": {
     "dev:web-app": "turbo run dev --filter=web-app",
     "build:web-app": "turbo run build --filter=web-app",
+    "pack:chrome-extension": "pnpm --filter=mcp-bridge-extension run pack",
     "postinstall": "simple-git-hooks",
     "lint": "eslint ."
   },
