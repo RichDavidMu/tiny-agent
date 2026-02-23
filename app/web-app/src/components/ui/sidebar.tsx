@@ -112,7 +112,7 @@ const SidebarProvider = React.forwardRef<
 
     const contextValue = React.useMemo<SidebarContextProps>(
       () => ({
-        state: status,
+        state,
         open,
         setOpen,
         isMobile,
