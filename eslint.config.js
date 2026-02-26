@@ -27,7 +27,7 @@ export default defineConfig(
         sourceType: 'module',
         ecmaVersion: 2022,
         isolatedDeclarations: true,
-        project: ['./packages/*/tsconfig.json'],
+        project: ['./packages/*/tsconfig.json', './app/*/tsconfig.json'],
       },
       globals: {
         ...globals.es2023,
@@ -162,7 +162,7 @@ export default defineConfig(
   },
   {
     name: 'globals',
-    files: ['packages/**/*.?([cm])[jt]s?(x)'],
+    files: ['packages/**/*.?([cm])[jt]s?(x)', 'app/**/*.?([cm])[jt]s?(x)'],
     ignores: ['**/__tests__/**'],
     rules: {
       'no-restricted-globals': ['error', 'require', '__dirname', '__filename'],
@@ -196,7 +196,7 @@ export default defineConfig(
   // ========================================
   {
     name: 'nodejs-projects',
-    files: ['packages/!(web-app)/**/*.?([cm])[jt]s?(x)'],
+    files: ['packages/!(agent-core|utils|web-llm)/**/*.?([cm])[jt]s?(x)'],
     languageOptions: {
       globals: {
         ...globals.node,
@@ -208,7 +208,7 @@ export default defineConfig(
   // ========================================
   {
     name: 'react-projects',
-    files: ['packages/web-app/**/*.{ts,tsx}'],
+    files: ['app/**/*.{ts,tsx}'],
     ignores: ['**/vite.config.ts'],
     plugins: {
       'react-hooks': reactHooks,
@@ -216,7 +216,7 @@ export default defineConfig(
     },
     languageOptions: {
       parserOptions: {
-        project: ['./packages/web-app/tsconfig.app.json'],
+        project: ['./app/*/tsconfig.json', './app/web-app/tsconfig.app.json'],
       },
       globals: {
         ...globals.browser,
