@@ -3,7 +3,7 @@
     "shadcn": {
       "command": "pnpm",
       "args": ["dlx", "shadcn@latest", "mcp"],
-      "cwd": "packages/web-app"
+      "cwd": "app/web-app"
     }
   }
 }

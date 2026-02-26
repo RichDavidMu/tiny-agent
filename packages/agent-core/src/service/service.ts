@@ -58,6 +58,11 @@ class Service {
     return this.mcpHost.getServers();
   }
 
+  async isMcpExtensionInstalled(): Promise<boolean> {
+    await this.mcpHost.waitForReady();
+    return this.mcpHost.isExtensionInstalled();
+  }
+
   enableTool(name: string): void {
     this.toolActor.enableTool(name);
   }

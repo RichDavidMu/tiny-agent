@@ -3,6 +3,7 @@ import { remove, unionBy } from 'lodash';
 import type { ToolActor } from '../core';
 import type { MCPClientOptions, MCPServerConfig } from './types.ts';
 import { MCPClient } from './client.ts';
+import { isExtensionInstalled } from './bridge.ts';
 
 const MCP_CONFIG = 'MCP_CONFIG';
 
@@ -38,6 +39,7 @@ export class MCPClientHost {
   private readonly toolActor: ToolActor;
   private clients: Map<string, MCPClient> = new Map();
   private readonly initPromise: Promise<void>;
+  private extensionInstalled = false;
 
   constructor(toolActor: ToolActor) {
     this.toolActor = toolActor;
@@ -45,6 +47,14 @@ export class MCPClientHost {
   }
 
   async init() {
+    // 检测浏览器插件是否安装
+    if (typeof window !== 'undefined') {
+      this.extensionInstalled = isExtensionInstalled();
+      if (!this.extensionInstalled) {
+        return;
+      }
+    }
+
     const cache = getConfigCache();
     cache.servers = unionBy(cache.servers, this.builtinServer, 'name');
     for (let i = 0; i < cache.servers.length; i++) {
@@ -82,5 +92,9 @@ export class MCPClientHost {
 
   getServers(): MCPServerConfig[] {
     return this.config.servers;
+  }
+
+  isExtensionInstalled(): boolean {
+    return this.extensionInstalled;
   }
 }

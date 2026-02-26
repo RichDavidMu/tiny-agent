@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { Edit2, Plus, Trash2 } from 'lucide-react';
+import { Edit2, Plus, Trash2, AlertCircle, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import mcpStore, { type MCPConfig } from '@/stores/mcp-store';
 
 interface MCPSettingsDialogProps {
@@ -91,71 +92,103 @@ const MCPSettingsDialog = observer(({ open, onOpenChange }: MCPSettingsDialogPro
         </DialogHeader>
 
         <div className="space-y-4">
-          {editingName ? (
-            <div className="border rounded-lg p-4 space-y-3">
-              <div>
-                <label className="text-sm font-medium">Name</label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., filesystem"
-                  disabled={editingName !== 'new'}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">URL</label>
-                <Input
-                  value={formData.url}
-                  onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                  placeholder="e.g., https://example.com/mcp"
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button onClick={handleSave} size="sm">
-                  Save
+          {!mcpStore.extensionInstalled ? (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Browser Extension Required</AlertTitle>
+              <AlertDescription className="mt-2 space-y-2">
+                <p>
+                  To use MCP servers, you need to install the Tiny Agent MCP Bridge browser
+                  extension.
+                </p>
+                <p className="text-sm">
+                  After installing the extension, please refresh this page to continue.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() =>
+                    window.open(
+                      'https://chromewebstore.google.com/detail/tiny-agent-mcp-bridge/enancoankilkplgabpojdilmgjaebodi',
+                      '_blank',
+                    )
+                  }
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Install Extension
                 </Button>
-                <Button onClick={handleCancel} variant="outline" size="sm">
-                  Cancel
-                </Button>
-              </div>
-            </div>
+              </AlertDescription>
+            </Alert>
           ) : (
-            <Button onClick={handleAdd} className="w-full" variant="outline">
-              <Plus className="w-4 h-4 mr-2" />
-              Add MCP Server
-            </Button>
-          )}
+            <>
+              {editingName ? (
+                <div className="border rounded-lg p-4 space-y-3">
+                  <div>
+                    <label className="text-sm font-medium">Name</label>
+                    <Input
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="e.g., filesystem"
+                      disabled={editingName !== 'new'}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">URL</label>
+                    <Input
+                      value={formData.url}
+                      onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                      placeholder="e.g., https://example.com/mcp"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={handleSave} size="sm">
+                      Save
+                    </Button>
+                    <Button onClick={handleCancel} variant="outline" size="sm">
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button onClick={handleAdd} className="w-full" variant="outline">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add MCP Server
+                </Button>
+              )}
 
-          <div className="space-y-2">
-            {mcpStore.mcpList.map((config) => (
-              <div
-                key={config.name}
-                className="border rounded-lg p-3 flex items-center justify-between hover:bg-accent/50 transition-colors"
-              >
-                <div className="flex-1">
-                  <div className="font-medium flex items-center gap-2">
-                    {config.name}
-                    {config.builtin && (
-                      <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
-                        Built-in
-                      </span>
+              <div className="space-y-2">
+                {mcpStore.mcpList.map((config) => (
+                  <div
+                    key={config.name}
+                    className="border rounded-lg p-3 flex items-center justify-between hover:bg-accent/50 transition-colors"
+                  >
+                    <div className="flex-1">
+                      <div className="font-medium flex items-center gap-2">
+                        {config.name}
+                        {config.builtin && (
+                          <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+                            Built-in
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-sm text-muted-foreground">{config.url}</div>
+                    </div>
+                    {!config.builtin && (
+                      <div className="flex gap-2">
+                        <Button onClick={() => handleEdit(config)} variant="ghost" size="sm">
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button onClick={() => handleDelete(config.name)} variant="ghost" size="sm">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     )}
                   </div>
-                  <div className="text-sm text-muted-foreground">{config.url}</div>
-                </div>
-                {!config.builtin && (
-                  <div className="flex gap-2">
-                    <Button onClick={() => handleEdit(config)} variant="ghost" size="sm">
-                      <Edit2 className="w-4 h-4" />
-                    </Button>
-                    <Button onClick={() => handleDelete(config.name)} variant="ghost" size="sm">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                )}
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>

@@ -10,6 +10,7 @@ export interface MCPConfig {
 class MCPStore {
   mcpList: MCPConfig[] = [];
   loading = false;
+  extensionInstalled = true;
 
   constructor() {
     makeAutoObservable(this);
@@ -18,8 +19,12 @@ class MCPStore {
   async loadMCPConfigs() {
     this.loading = true;
     try {
-      // 等待 MCP 初始化完成后再获取配置
-      this.mcpList = await service.getMcpServers();
+      // 检查插件安装状态
+      this.extensionInstalled = await service.isMcpExtensionInstalled();
+      if (this.extensionInstalled) {
+        // 等待 MCP 初始化完成后再获取配置
+        this.mcpList = await service.getMcpServers();
+      }
     } finally {
       this.loading = false;
     }

@@ -12,7 +12,6 @@ import {
   type MCPBridgeStreamError,
   type MCPBridgeWindow,
   MCP_BRIDGE_ID,
-  MCP_BRIDGE_READY_EVENT,
 } from 'mcp-bridge-extension';
 import { agentLogger } from '@tini-agent/utils';
 
@@ -167,30 +166,6 @@ export function getExtensionVersion(): string | null {
  */
 export function isChannelAvailable(): boolean {
   return getPort() !== null;
-}
-
-/**
- * 等待扩展就绪
- */
-export function waitForExtension(timeout = 1000): Promise<boolean> {
-  return new Promise((resolve) => {
-    if (isExtensionInstalled()) {
-      resolve(true);
-      return;
-    }
-
-    const onReady = () => {
-      window.removeEventListener(MCP_BRIDGE_READY_EVENT, onReady);
-      resolve(true);
-    };
-
-    window.addEventListener(MCP_BRIDGE_READY_EVENT, onReady);
-
-    setTimeout(() => {
-      window.removeEventListener(MCP_BRIDGE_READY_EVENT, onReady);
-      resolve(isExtensionInstalled());
-    }, timeout);
-  });
 }
 
 /**

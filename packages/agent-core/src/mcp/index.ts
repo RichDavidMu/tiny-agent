@@ -7,7 +7,6 @@ export type { MCPServerConfig, MCPClientOptions } from './types.ts';
 export {
   isExtensionInstalled,
   getExtensionVersion,
-  waitForExtension,
   bridgeFetch,
   bridgeStreamFetch,
   createSmartFetch,
