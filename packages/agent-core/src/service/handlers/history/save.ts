@@ -8,20 +8,6 @@ import { agentDb } from '../../../storage';
 import type { StateContext } from '../../../types';
 import type { TaskCtx } from '../task';
 
-export async function saveHistory(sessionId: string, nodes: SessionNode[]): Promise<void> {
-  const existing = await agentDb.session.get(sessionId);
-  if (existing) {
-    await agentDb.session.update(sessionId, { nodes: [...existing.nodes, ...nodes] });
-  } else {
-    const firstUserNode = nodes.find((n) => n.role === 'user');
-    await agentDb.session.create({
-      id: sessionId,
-      nodes,
-      name: firstUserNode ? (firstUserNode.content[0] as SessionTextContent).text : sessionId,
-    });
-  }
-}
-
 export function buildSessionNodeFromContext(
   messageId: string,
   role: 'user' | 'assistant',
@@ -56,6 +42,7 @@ export function buildSessionNodeFromContext(
       }
     }
     if (context.finalAnswer) {
+      console.log(context);
       content.push({
         type: 'text',
         text: context.finalAnswer,
@@ -65,7 +52,6 @@ export function buildSessionNodeFromContext(
   }
 
   // Add plan tasks
-
   return {
     id: messageId,
     role,
@@ -103,5 +89,14 @@ export async function saveSessionHistory(ctx: TaskCtx, finalContext: StateContex
   nodes.push(assistantNode);
 
   // Save session history
-  await saveHistory(sid, nodes);
+  if (existingSession) {
+    await agentDb.session.update(sid, { nodes });
+  } else {
+    const firstUserNode = nodes.find((n) => n.role === 'user');
+    await agentDb.session.create({
+      id: sid,
+      nodes,
+      name: firstUserNode ? (firstUserNode.content[0] as SessionTextContent).text : sid,
+    });
+  }
 }

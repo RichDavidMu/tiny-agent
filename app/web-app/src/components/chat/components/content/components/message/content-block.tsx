@@ -6,7 +6,7 @@ import { TaskContent } from './task-content';
 
 export const ContentBlock = observer(({ content }: { content: ContentNode }) => {
   if (content.type === 'text') {
-    return <Markdown>{content.text}</Markdown>;
+    return <Markdown attachments={content.attachments}>{content.text}</Markdown>;
   }
   if (content.type === 'task') {
     return <TaskContent content={content} />;

@@ -18,7 +18,9 @@ export async function getHistory({ sessionId }: GetHistoryReq): Promise<HistoryR
 
   const nodes: HistoryNode[] = await Promise.all(
     session.nodes.map(async (node) => {
-      const content = await Promise.all(node.content.map((c) => transformContentNode(c)));
+      const content = await Promise.all(
+        node.content.map(async (c) => await transformContentNode(c)),
+      );
       return {
         id: node.id,
         role: node.role,
@@ -42,7 +44,7 @@ async function transformContentNode(node: SessionContentNode): Promise<HistoryCo
     return node;
   }
   if (node.type === 'task') {
-    return transformTaskContent(node);
+    return await transformTaskContent(node);
   }
   return node;
 }

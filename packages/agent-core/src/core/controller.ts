@@ -84,7 +84,7 @@ export class AgentController {
 
     // Parse and get file attachments from final answer
     const attachments = await this.getFileAttachments(ans);
-    finalContext.finalAttachments = attachments;
+    this.stateMachine.updateContext({ finalAttachments: attachments });
     this.ctx.onText({ text: ans, attachments }, 'text');
     this.ctx.onContentBlockEnd();
     this.ctx.onEnd(stop_reason);
