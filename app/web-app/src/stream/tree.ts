@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import { type HistoryResponse } from '@tini-agent/agent-core';
-import { Node, TaskNode, TextNode, ThinkNode } from '@/stream/node';
+import { type ContentNode, Node, TaskNode, TextNode, ThinkNode } from '@/stream/node';
 
 class Tree {
   root = Tree.createRoot();
@@ -24,15 +24,19 @@ class Tree {
     history.nodes.forEach((node) => {
       const newNode = new Node({ id: node.id, role: node.role });
       node.content.forEach((c) => {
+        let contentNode: ContentNode | null = null;
         if (c.type === 'text') {
-          newNode.content.push(new TextNode(c));
+          contentNode = new TextNode(c);
         }
         if (c.type === 'thinking') {
-          newNode.content.push(new ThinkNode(c));
+          contentNode = new ThinkNode(c);
         }
         if (c.type === 'task') {
-          newNode.content.push(new TaskNode(c));
+          contentNode = new TaskNode(c);
         }
+        if (!contentNode) return;
+        newNode.content.push(contentNode);
+        contentNode.setEnd(true);
       });
       this.appendNode(newNode);
     });
