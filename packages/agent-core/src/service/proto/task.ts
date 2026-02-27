@@ -83,6 +83,7 @@ interface ContentBase {
 export interface StartTextContent extends ContentBase {
   type: 'text' | 'thinking';
   text: string;
+  attachments?: CreateFileInput[];
 }
 
 export type DeltaTextContent = StartTextContent;

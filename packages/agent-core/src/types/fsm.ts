@@ -1,4 +1,5 @@
 import type { ChatCompletionTool } from '@mlc-ai/web-llm';
+import type { CreateFileInput } from '../storage';
 import type { ToolStepResult } from './tools.ts';
 import type { PlanSchema, StepSchema, TaskSchema } from './planer.ts';
 
@@ -27,6 +28,7 @@ export interface StateContext {
   rethinkRounds: number;
   error?: Error;
   finalAnswer?: string;
+  finalAttachments?: CreateFileInput[];
 }
 
 /**

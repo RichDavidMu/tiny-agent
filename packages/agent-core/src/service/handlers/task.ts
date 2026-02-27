@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import type { AgentChunk, CTX, MessageStop, StatusBlock } from '../proto';
 import type { AgentState, StepSchema, TaskSchema } from '../../types';
-import type { CreateToolResultInput } from '../../storage';
+import type { CreateFileInput, CreateToolResultInput } from '../../storage';
 
 export interface TaskReq {
   input: string;
@@ -125,7 +125,10 @@ export class TaskCtx implements CTX<TaskReq, TaskCtx> {
     });
     this.write({ type: 'content_block_stop', index: 0, stop_timestamp: new Date().getDate() });
   }
-  public onText(t: string, type: 'text' | 'thinking'): void {
+  public onText(
+    { text, attachments }: { text: string; attachments?: CreateFileInput[] },
+    type: 'text' | 'thinking',
+  ): void {
     if (this.latestChunk.type === 'message_stop') {
       throw new Error('stream stopped');
     }
@@ -139,7 +142,8 @@ export class TaskCtx implements CTX<TaskReq, TaskCtx> {
         start_timestamp: new Date().getDate(),
         content_block: {
           type: type,
-          text: t,
+          text: text,
+          attachments,
         },
       });
       return;
@@ -157,7 +161,8 @@ export class TaskCtx implements CTX<TaskReq, TaskCtx> {
         start_timestamp: new Date().getDate(),
         content_block: {
           type: type,
-          text: t,
+          text: text,
+          attachments,
         },
       });
       return;
@@ -167,7 +172,8 @@ export class TaskCtx implements CTX<TaskReq, TaskCtx> {
       index: this.latestChunk.index + 1,
       content_block: {
         type: type,
-        text: t,
+        text: text,
+        attachments,
       },
     });
   }

@@ -8,6 +8,7 @@ import {
   llmController,
 } from '../llm';
 import { agentDb, persistResult } from '../storage';
+import type { CreateFileInput } from '../storage';
 import type { MessageStop, TaskCtx } from '../service';
 import { PlanSystemPrompt, PlanUserPrompt } from './prompt/planPrompt.ts';
 import type { ToolActor } from './toolActor.ts';
@@ -80,7 +81,11 @@ export class AgentController {
     } else {
       ans = finalContext.finalAnswer || 'Task completed';
     }
-    this.ctx.onText(ans, 'text');
+
+    // Parse and get file attachments from final answer
+    const attachments = await this.getFileAttachments(ans);
+    finalContext.finalAttachments = attachments;
+    this.ctx.onText({ text: ans, attachments }, 'text');
     this.ctx.onContentBlockEnd();
     this.ctx.onEnd(stop_reason);
   }
@@ -113,7 +118,7 @@ export class AgentController {
     let emitThinkingEnd = false;
     while (!(chunk = await reader.read()).done) {
       if (chunk.value.type === 'thinking') {
-        this.ctx.res.onText(chunk.value.content, 'thinking');
+        this.ctx.res.onText({ text: chunk.value.content }, 'thinking');
         thinking += chunk.value.content;
       }
       if (chunk.value.type === 'plan') {
@@ -269,6 +274,39 @@ export class AgentController {
     }
   }
 
+  /**
+   * Parse file IDs from text and get file attachments
+   */
+  private async getFileAttachments(text: string): Promise<CreateFileInput[]> {
+    // Extract file IDs from <file>...</file> tags
+    const fileIdMatches = text.matchAll(/<file>(.*?)<\/file>/g);
+    const fileIds: string[] = [];
+
+    for (const match of fileIdMatches) {
+      const content = match[1];
+      // Split by comma in case multiple IDs in one tag
+      const ids = content.split(',').map((id) => id.trim());
+      fileIds.push(...ids);
+    }
+    if (fileIds.length === 0) {
+      return [];
+    }
+    // Query files from database
+    const attachments: CreateFileInput[] = [];
+    for (const fileId of fileIds) {
+      const fileRecord = await agentDb.file.get(fileId);
+      if (!fileRecord) {
+        agentLogger.warn(`File ${fileId} not found in database`);
+        continue;
+      }
+      attachments.push(fileRecord);
+    }
+    return attachments;
+  }
+
+  /**
+   * Build tool memo from current task
+   */
   private async buildToolMemo(): Promise<string> {
     const curTask = this.stateMachine.getContext().currentTask;
     if (!curTask) {

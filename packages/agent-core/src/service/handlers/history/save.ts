@@ -56,7 +56,11 @@ export function buildSessionNodeFromContext(
       }
     }
     if (context.finalAnswer) {
-      content.push({ type: 'text', text: context.finalAnswer });
+      content.push({
+        type: 'text',
+        text: context.finalAnswer,
+        attachments: context.finalAttachments,
+      });
     }
   }
 

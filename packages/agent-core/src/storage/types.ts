@@ -54,6 +54,7 @@ export type SessionContentNode = SessionTextContent | SessionThinkingContent | S
 export type SessionTextContent = {
   type: 'text';
   text: string;
+  attachments?: CreateFileInput[];
 };
 
 export type SessionThinkingContent = {
