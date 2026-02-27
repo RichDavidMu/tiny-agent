@@ -22,10 +22,12 @@ import rootStore from '@/stores/root-store.ts';
 import { selectSession } from '@/lib/session.ts';
 import stream from '@/stream/stream.ts';
 import MCPSettingsDialog from '@/components/mcp-settings-dialog';
+import GeneralSettingsDialog from '@/components/general-settings-dialog';
 
 const MySidebar = observer(() => {
   const { sessionStore } = rootStore;
   const [mcpDialogOpen, setMcpDialogOpen] = useState(false);
+  const [generalDialogOpen, setGeneralDialogOpen] = useState(false);
 
   useEffect(() => {
     sessionStore.getSessions();
@@ -91,8 +93,14 @@ const MySidebar = observer(() => {
               </DropdownMenuTrigger>
               <DropdownMenuContent side="top" align="start" className="w-48">
                 <DropdownMenuItem onClick={() => setMcpDialogOpen(true)}>MCP 设置</DropdownMenuItem>
-                <DropdownMenuItem>通用设置</DropdownMenuItem>
-                <DropdownMenuItem>关于</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setGeneralDialogOpen(true)}>
+                  通用设置
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => window.open('https://github.com/RichDavidMu/tiny-agent', '_blank')}
+                >
+                  关于
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>
@@ -100,6 +108,7 @@ const MySidebar = observer(() => {
       </SidebarFooter>
 
       <MCPSettingsDialog open={mcpDialogOpen} onOpenChange={setMcpDialogOpen} />
+      <GeneralSettingsDialog open={generalDialogOpen} onOpenChange={setGeneralDialogOpen} />
     </Sidebar>
   );
 });
