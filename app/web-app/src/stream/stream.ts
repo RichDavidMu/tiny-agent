@@ -26,11 +26,11 @@ class Stream {
       params: false,
     });
   }
-  async task(params: { input: string }) {
-    this.params = params;
+  async task({ input }: { input: string }) {
+    this.params = { input, sessionId: rootStore.sessionStore.sessionId };
     this.loading = true;
     try {
-      const stream = await service.taskStream(params);
+      const stream = await service.taskStream(this.params);
       const reader = stream.getReader();
       while (true) {
         const { value, done } = await reader.read();
@@ -144,14 +144,16 @@ class Stream {
 
   handleMessageStart(chunk: MessageStart) {
     const { id, parent } = chunk.message;
-    const { addSession } = rootStore.sessionStore;
+    const { addSession, sessionId } = rootStore.sessionStore;
     const userNode = new Node({ id: parent, role: 'user' });
     userNode.content.push(new TextNode({ text: this.params!.input, type: 'text' }));
     const assistantNode = new Node({ id, role: 'assistant' });
     tree.appendNode(userNode);
     tree.appendNode(assistantNode);
-    addSession({ id: chunk.message.sessionId, name: this.params!.input });
-    selectSession(chunk.message.sessionId);
+    if (chunk.message.sessionId !== sessionId) {
+      addSession({ id: chunk.message.sessionId, name: this.params!.input });
+      selectSession(chunk.message.sessionId);
+    }
   }
 }
 
