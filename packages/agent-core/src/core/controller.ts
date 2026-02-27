@@ -280,15 +280,17 @@ export class AgentController {
   private async getFileAttachments(text: string): Promise<CreateFileInput[]> {
     // Extract file IDs from <file>...</file> tags
     const fileIdMatches = text.matchAll(/<file>(.*?)<\/file>/g);
-    const fileIds: string[] = [];
+    const fileIds: Set<string> = new Set();
 
     for (const match of fileIdMatches) {
       const content = match[1];
       // Split by comma in case multiple IDs in one tag
-      const ids = content.split(',').map((id) => id.trim());
-      fileIds.push(...ids);
+      content
+        .split(',')
+        .map((id) => id.trim())
+        .forEach((id) => fileIds.add(id));
     }
-    if (fileIds.length === 0) {
+    if (fileIds.size === 0) {
       return [];
     }
     // Query files from database

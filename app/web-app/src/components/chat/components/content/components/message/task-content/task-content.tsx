@@ -1,11 +1,16 @@
 import { observer } from 'mobx-react-lite';
 import type { TaskNode } from 'src/stream/node/content-nodes/task-node';
+import { useEffect, useState } from 'react';
 import { Steps, StepsContent, StepsItem, StepsTrigger } from '@/components/ui/steps';
 import { Tool } from '@/components/ui/tool.tsx';
 
 export const TaskContent = observer(({ content }: { content: TaskNode }) => {
+  const [open, setOpen] = useState(!content.ended);
+  useEffect(() => {
+    setOpen(!content.ended);
+  }, [content.ended]);
   return (
-    <Steps defaultOpen>
+    <Steps open={open} onOpenChange={(v) => setOpen(v)} className="text-primary">
       <StepsTrigger>{content.taskGoal}</StepsTrigger>
       <StepsContent>
         <div className="space-y-1">

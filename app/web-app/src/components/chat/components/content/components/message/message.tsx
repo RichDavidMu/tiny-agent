@@ -15,8 +15,8 @@ export const Message = observer(({ node }: { node: Node }) => {
       />
       <MessageContent
         className={cn(
-          'max-w-[80%] rounded-lg p-2 text-foreground bg-secondary prose break-words whitespace-normal',
-          node.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary',
+          'space-y-4 max-w-[80%] rounded-lg p-2 text-foreground prose break-words whitespace-normal',
+          node.role === 'user' ? 'bg-primary text-primary-foreground' : '',
         )}
       >
         {node.content.map((c) => (

@@ -17,7 +17,7 @@ export const ContentBlock = observer(({ content }: { content: ContentNode }) => 
         <ReasoningTrigger>Show reasoning</ReasoningTrigger>
         <ReasoningContent
           markdown
-          className="ml-2 border-l-2 border-l-slate-200 px-2 pb-1 dark:border-l-slate-700"
+          className="ml-2 border-l-2 border-l-slate-200 px-2 dark:border-l-slate-700"
         >
           {content.text}
         </ReasoningContent>
