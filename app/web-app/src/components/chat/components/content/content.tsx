@@ -13,7 +13,7 @@ const Content = observer(() => {
     >
       <div className="mx-auto flex w-full h-full max-w-4xl flex-col px-4 py-4">
         <>
-          <div className="flex-1 space-y-4 overflow-y-auto rounded-xl p-4">
+          <div className="flex-1 space-y-4 overflow-y-auto rounded-xl p-4 no-scrollbar">
             {tree.list.length === 0 && (
               <div className="flex h-full items-center justify-center text-muted-foreground">
                 {/*{llm.ready ? 'Start a conversation with the AI!' : llm.progressText}*/}
