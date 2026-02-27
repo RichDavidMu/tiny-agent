@@ -1,7 +1,7 @@
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type { ChatCompletionAssistantMessageParam } from '@mlc-ai/web-llm';
 import { agentLogger } from '@tini-agent/utils';
-import { agentDb } from '../storage/db.ts';
+import { agentDb } from '../storage';
 import type {
   ICallToolResult,
   PlanSchema,
