@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 
 export type ToolPart = {
   type: string;
-  state: 'input-streaming' | 'input-available' | 'output-available' | 'output-error';
+  state: 'input-streaming' | 'input-available' | 'output-available' | 'output-error' | 'pending';
   input?: Record<string, unknown>;
   output?: string;
   toolCallId?: string;
@@ -28,10 +28,11 @@ const Tool = ({ toolPart, defaultOpen = false, className }: ToolProps) => {
 
   const getStateIcon = () => {
     switch (state) {
-      case 'input-streaming':
-        return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
-      case 'input-available':
+      case 'pending':
         return <Settings className="h-4 w-4 text-orange-500" />;
+      case 'input-streaming':
+      case 'input-available':
+        return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
       case 'output-available':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'output-error':
@@ -52,7 +53,7 @@ const Tool = ({ toolPart, defaultOpen = false, className }: ToolProps) => {
               'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
             )}
           >
-            Processing
+            Calling
           </span>
         );
       case 'input-available':
@@ -60,10 +61,21 @@ const Tool = ({ toolPart, defaultOpen = false, className }: ToolProps) => {
           <span
             className={cn(
               baseClasses,
+              'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+            )}
+          >
+            Processing
+          </span>
+        );
+      case 'pending':
+        return (
+          <span
+            className={cn(
+              baseClasses,
               'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
             )}
           >
-            Ready
+            Waiting
           </span>
         );
       case 'output-available':

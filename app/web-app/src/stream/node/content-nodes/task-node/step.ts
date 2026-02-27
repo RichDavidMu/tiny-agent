@@ -6,15 +6,26 @@ import type {
 } from '@tini-agent/agent-core';
 import { makeAutoObservable } from 'mobx';
 import type { ToolPart } from '@/components/ui/tool.tsx';
+import type { TaskNode } from '@/stream';
 
 export class Step {
   meta: StepSchema;
   input?: Record<string, any>;
   shouldAct: boolean | null = null;
   content: string | null = null;
-  constructor({ meta, initParams }: { meta: StepSchema; initParams?: HistoryStepContent }) {
+  taskNode: TaskNode;
+  constructor({
+    meta,
+    initParams,
+    taskNode,
+  }: {
+    meta: StepSchema;
+    initParams?: HistoryStepContent;
+    taskNode: TaskNode;
+  }) {
     makeAutoObservable(this);
     this.meta = meta;
+    this.taskNode = taskNode;
     if (!initParams) return;
     const { result, shouldAct, input } = initParams;
     this.content = result;
@@ -46,7 +57,11 @@ export class Step {
     if (this.input) {
       return 'input-available';
     }
-    return 'input-streaming';
+    const idx = this.taskNode.stepList.findIndex((s) => s === this);
+    if (idx === 0 || this.taskNode.stepList[idx - 1]?.meta?.status !== 'pending') {
+      return 'input-streaming';
+    }
+    return 'pending';
   }
   update(chunk: ContentBlockTaskToolResultDelta | ContentBlockTaskToolUseDelta) {
     const { content_block } = chunk;

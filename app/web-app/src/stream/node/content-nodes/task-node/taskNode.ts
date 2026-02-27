@@ -30,6 +30,7 @@ export class TaskNode extends BaseContentNode {
     this.status = status;
     steps.forEach((s) => {
       const newStep = new Step({
+        taskNode: this,
         meta: {
           status: s.status,
           step_uuid: s.step_uuid,
@@ -55,7 +56,7 @@ export class TaskNode extends BaseContentNode {
       this.taskGoal = task_goal;
       this.taskUuid = task_uuid;
       steps.forEach((s) => {
-        this.steps.set(s.step_uuid, new Step({ meta: s }));
+        this.steps.set(s.step_uuid, new Step({ meta: s, taskNode: this }));
       });
       return;
     }
