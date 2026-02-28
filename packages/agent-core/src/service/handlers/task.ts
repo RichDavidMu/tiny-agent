@@ -123,7 +123,6 @@ export class TaskCtx implements CTX<TaskReq, TaskCtx> {
         },
       },
     });
-    this.write({ type: 'content_block_stop', index: 0, stop_timestamp: new Date().getDate() });
   }
   public onText(
     { text, attachments }: { text: string; attachments?: CreateFileInput[] },
