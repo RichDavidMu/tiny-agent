@@ -9,6 +9,7 @@ import {
   type ContentBlockTextDelta,
   type ContentBlockTextStart,
   type MessageStart,
+  type StatusBlock,
   type TaskReq,
   service,
 } from '@tini-agent/agent-core';
@@ -52,6 +53,10 @@ class Stream {
             }
             case 'content_block_stop': {
               this.handleContentBlockStop();
+              break;
+            }
+            case 'status_block': {
+              this.handleStatusChange(value);
               break;
             }
             case 'message_stop': {
@@ -154,6 +159,11 @@ class Stream {
       addSession({ id: chunk.message.sessionId, name: this.params!.input });
       selectSession(chunk.message.sessionId);
     }
+  }
+
+  handleStatusChange(chunk: StatusBlock) {
+    const { status } = chunk;
+    tree.status = status;
   }
 }
 

@@ -1,10 +1,11 @@
 import { makeAutoObservable } from 'mobx';
-import { type HistoryResponse } from '@tini-agent/agent-core';
+import { AgentState, type HistoryResponse } from '@tini-agent/agent-core';
 import { type ContentNode, Node, TaskNode, TextNode, ThinkNode } from '@/stream/node';
 
 class Tree {
   root = Tree.createRoot();
   currentNode = this.root;
+  status: AgentState = AgentState.IDLE;
 
   constructor() {
     makeAutoObservable(this);
