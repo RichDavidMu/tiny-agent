@@ -39,8 +39,8 @@ function Home() {
         </h2>
         <div className="mx-auto max-w-4xl">
           <div className="overflow-hidden rounded-xl border bg-card shadow-lg">
-            <video controls className="w-full" width="894" height="645" poster="/intro-poster.jpg">
-              <source src="/intro.mp4" type="video/mp4" />
+            <video controls className="w-full" width="894" height="645">
+              <source src="http://cdn.agent.renbaicai.site/video/intro.mp4" type="video/mp4" />
               您的浏览器不支持视频播放。
             </video>
           </div>

@@ -17,7 +17,7 @@ Tiny-agent
 
 ## 📺 演示视频
 
-[intro.mp4](/app/web-app/public/intro.mp4)
+[观看演示视频](http://cdn.agent.renbaicai.site/video/intro.mp4)
 
 > 完整演示视频展示了 tiny-agent 执行复杂任务的全过程
 
