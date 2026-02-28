@@ -13,6 +13,8 @@ Tiny-agent
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6.svg)](https://www.typescriptlang.org/)
 [![WebLLM](https://img.shields.io/badge/WebLLM-Latest-orange.svg)](https://github.com/mlc-ai/web-llm)
 
+[🌐 官方网站](https://renbaicai.site/) | [📖 文档](./docs) | [🚀 快速开始](#-安装和使用)
+
 </div>
 
 ## 📺 演示视频
