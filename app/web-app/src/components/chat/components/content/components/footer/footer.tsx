@@ -15,7 +15,7 @@ import stream from '@/stream/stream.ts';
 const Footer = observer(() => {
   const { inputStore } = rootStore;
 
-  const promptSuggestions = ['写一篇特朗普2025年关税政策评价', '生成一个包含新年好是三个字的网页'];
+  const promptSuggestions = ['写一篇特朗普2025年关税政策评价', '写一篇ai领域股票投资建议'];
 
   const handleSuggestionClick = (suggestion: string) => {
     inputStore.setInput(suggestion);
