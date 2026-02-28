@@ -1,4 +1,6 @@
-# tiny-agent
+<h1 align="center">
+Tiny-agent
+</h1>
 
 <div align="center">
 
@@ -15,7 +17,7 @@
 
 ## 📺 演示视频
 
-https://github.com/user-attachments/assets/intro.mp4
+[intro.mp4](/app/web-app/public/intro.mp4)
 
 > 完整演示视频展示了 tiny-agent 执行复杂任务的全过程
 
