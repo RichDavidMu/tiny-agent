@@ -28,7 +28,12 @@ const Content = observer(() => {
                 </div>
               )}
               {tree.list.map((node) => (
-                <Message node={node} key={node.id} />
+                <Message
+                  node={node}
+                  key={node.id}
+                  status={tree.status}
+                  isCurrentNode={tree.currentNode === node}
+                />
               ))}
               <div ref={scrollBottomRef} />
             </div>
