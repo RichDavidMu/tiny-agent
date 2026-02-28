@@ -2,6 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { Plus, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 import {
   Sidebar,
   SidebarContent,
@@ -55,7 +56,9 @@ const MySidebar = observer(() => {
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center justify-between px-2 py-3">
           <div className="flex items-center gap-2">
-            <div className="text-lg font-semibold">tiny-agent</div>
+            <Link to={'/'} className="text-lg font-semibold">
+              tiny-agent
+            </Link>
           </div>
           <Button size="sm" onClick={handleNewSession} className="h-8 gap-2">
             <Plus className="h-4 w-4" />
