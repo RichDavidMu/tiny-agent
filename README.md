@@ -1,7 +1,230 @@
 # tiny-agent
 
-A completely front-end driven AI agent project, requiring no server resources.
+<div align="center">
 
-## For Claude Code
+**一个完全前端驱动的 AI Agent 项目，无需服务器资源**
 
-Before you start thinking about the project, read the documents in the `/docs` folder. These documents describe the project structure and coding guidelines. The documents were written the last time the project was run. Every time code is generated, you should check if the documentation needs to be updated.
+[English](./README_EN.md) | 简体中文
+
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6.svg)](https://www.typescriptlang.org/)
+[![WebLLM](https://img.shields.io/badge/WebLLM-Latest-orange.svg)](https://github.com/mlc-ai/web-llm)
+
+</div>
+
+## 📺 演示视频
+
+https://github.com/user-attachments/assets/intro.mp4
+
+> 完整演示视频展示了 tiny-agent 执行复杂任务的全过程
+
+## ✨ 项目特点
+
+### 🌐 完全浏览器端运行
+
+- **零服务器依赖**：所有 AI 推理完全在浏览器中运行，使用 WebLLM 和 WebGPU
+- **无需 API Key**：不需要任何第三方 API，零成本使用
+- **完全隐私**：所有数据保留在本地设备，永不上传
+
+### 🏗️ 先进的 Agent 架构
+
+- **Planning Agent 模式**：完整的规划-执行-反思循环
+- **状态机控制器**：IDLE → PLANNING → EXECUTING → RETHINKING → DONE
+- **UI 与 Agent 层分离**：清晰的架构边界，易于维护和扩展
+- **双 LLM 系统**：分别用于规划和工具执行的 LLM 实例
+
+### 💾 数据持久化
+
+- **IndexedDB 存储**：对话历史、文件附件、工具结果全部本地持久化
+- **Session 管理**：完整的多轮对话支持
+- **文件附件系统**：支持在回复中附加生成的文件
+
+### 🔌 MCP 协议支持
+
+- **Model Context Protocol**：完整支持 MCP 协议
+- **MCP Bridge Extension**：Chrome 扩展解决 CORS 限制
+- **可扩展工具系统**：轻松添加新的工具和能力
+
+### ⚡ 性能优化
+
+- **WebGPU 加速**：利用硬件加速实现接近原生的性能
+- **流式响应**：实时流式输出，即时反馈
+- **React 19 Compiler**：自动优化，更快的渲染性能
+- **Web Workers**：LLM 推理在独立线程中运行，不阻塞 UI
+
+### 🛠️ 内置工具
+
+- **Code Expert**：代码生成和软件工程任务
+- **JavaScript Executor**：沙箱环境中执行 JavaScript
+- **Writing Expert**：写作和内容创作辅助
+
+## 🏛️ 项目架构
+
+```
+tiny-agent/
+├── app/
+│   └── web-app/              # React 19 + Vite 前端应用
+│       ├── src/
+│       │   ├── components/   # UI 组件
+│       │   ├── stores/       # MobX 状态管理
+│       │   ├── pages/        # 页面组件
+│       │   └── stream/       # 流式处理
+│       └── public/           # 静态资源
+├── packages/
+│   ├── agent-core/           # Agent 核心逻辑
+│   │   ├── src/
+│   │   │   ├── core/         # 状态机控制器
+│   │   │   ├── service/      # 服务层
+│   │   │   ├── storage/      # IndexedDB 存储
+│   │   │   └── tools/        # 内置工具
+│   ├── web-llm/              # 自定义 @mlc-ai/web-llm fork
+│   ├── mcp-bridge-extension/ # Chrome 扩展（MCP CORS 解决方案）
+│   └── utils/                # 共享工具库
+└── docs/                     # 项目文档
+```
+
+### 核心架构亮点
+
+1. **Monorepo 设计**：使用 pnpm workspaces 管理多包项目
+2. **状态机模式**：Agent 执行遵循严格的状态转换
+3. **流式架构**：端到端流式处理，从 LLM 到 UI
+4. **类型安全**：TypeScript 严格模式，完整的类型定义
+5. **模块化工具系统**：通过清晰的接口轻松扩展
+
+## 🚀 技术栈
+
+### 前端
+
+- **React 19** - 最新的 React 版本，支持 React Compiler
+- **TypeScript 5.9** - 类型安全的开发体验
+- **Vite 7** - 下一代前端构建工具
+- **Tailwind CSS** - 实用优先的 CSS 框架
+- **shadcn/ui** - 高质量的 UI 组件
+- **Radix UI** - 无障碍的 UI 原语
+- **MobX** - 简单、可扩展的状态管理
+
+### AI/LLM
+
+- **@mlc-ai/web-llm** - 浏览器中的 LLM 推理（自定义 fork）
+- **WebGPU** - 硬件加速的图形和计算 API
+- **Web Workers** - 多线程 LLM 推理
+
+### 基础设施
+
+- **pnpm** - 快速、节省磁盘空间的包管理器
+- **Turbo** - 高性能构建系统
+- **IndexedDB** - 浏览器端数据库
+- **Chrome Extension (Manifest V3)** - MCP CORS 解决方案
+
+## 📦 安装和使用
+
+### 前置要求
+
+- Node.js >= 18
+- pnpm >= 8
+- 支持 WebGPU 的现代浏览器（Chrome/Edge 113+）
+
+### 安装依赖
+
+```bash
+# 克隆仓库
+git clone https://github.com/RichDavidMu/tiny-agent.git
+cd tiny-agent
+
+# 安装依赖
+pnpm install
+```
+
+### 开发模式
+
+```bash
+# 启动开发服务器
+pnpm dev
+
+# 或者只启动 web-app
+cd app/web-app
+pnpm dev
+```
+
+### 构建生产版本
+
+```bash
+# 构建所有包
+pnpm build
+
+# 或者只构建 web-app
+cd app/web-app
+pnpm build
+```
+
+### 安装 MCP Bridge Extension（可选）
+
+如果需要使用 MCP 功能：
+
+1. 构建扩展：
+
+```bash
+cd packages/mcp-bridge-extension
+pnpm build
+```
+
+2. 在 Chrome 中加载扩展：
+   - 打开 `chrome://extensions/`
+   - 启用"开发者模式"
+   - 点击"加载已解压的扩展程序"
+   - 选择 `packages/mcp-bridge-extension/dist` 目录
+
+## 🎯 使用指南
+
+1. **首次使用**：首次打开应用时，LLM 模型会自动下载并缓存在浏览器中（约 2-4GB）
+2. **开始对话**：在聊天界面输入你的问题或任务
+3. **Agent 执行**：Agent 会自动规划、执行任务，并提供实时反馈
+4. **查看结果**：任务完成后，可以查看生成的文件和详细的执行过程
+
+## 🔧 配置
+
+### 调试日志
+
+在通用设置中可以开启调试日志：
+
+- **Web App 日志**：前端应用的调试信息
+- **Agent Core 日志**：Agent 核心逻辑的调试信息
+
+日志通过 `localStorage.debug` 字段控制（格式：`web-app*,agent-core*`）
+
+### 主题
+
+支持浅色和深色主题，可在通用设置中切换。
+
+## 📝 待完成功能
+
+- [ ] **上下文管理**：更智能的上下文窗口管理和压缩
+- [ ] **更多工具**：扩展内置工具集
+- [ ] **模型选择**：支持多个 LLM 模型切换
+- [ ] **导出功能**：导出对话历史和生成的文件
+
+## 🤝 贡献
+
+欢迎贡献！请随时提交 Issue 或 Pull Request。
+
+## 📄 许可证
+
+MIT License - 详见 [LICENSE](LICENSE) 文件
+
+## 🙏 致谢
+
+- [WebLLM](https://github.com/mlc-ai/web-llm) - 浏览器中的 LLM 推理引擎
+- [shadcn/ui](https://ui.shadcn.com/) - 精美的 UI 组件
+- [Radix UI](https://www.radix-ui.com/) - 无障碍的 UI 原语
+
+## 📮 联系方式
+
+- GitHub: [@RichDavidMu](https://github.com/RichDavidMu)
+- 项目地址: [https://github.com/RichDavidMu/tiny-agent](https://github.com/RichDavidMu/tiny-agent)
+
+---
+
+<div align="center">
+Made with ❤️ by the tiny-agent team
+</div>
