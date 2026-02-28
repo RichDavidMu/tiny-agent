@@ -20,6 +20,10 @@ export class InputStore {
       toast.info('task running, please wait for a while');
       return;
     }
+    if (!stream.ready) {
+      toast.info('please wait for llm ready');
+      return;
+    }
     await stream.task({ input: this.input });
   }
 }

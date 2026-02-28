@@ -9,11 +9,12 @@ import type {
   AskLLMInputBase,
   AskLLMInputNonStreaming,
   AskLLMInputStreaming,
+  StepSchema,
+  TaskSchema,
   ToolCallResponse,
   ToolContextDecision,
-} from '../types/llm.ts';
+} from '../types';
 import { parseLLMReply } from '../utils/llmHelper.ts';
-import type { StepSchema, TaskSchema } from '../types/planer.ts';
 import { ValueError } from '../core/exceptions.ts';
 import {
   ToolCallSystemPrompt,

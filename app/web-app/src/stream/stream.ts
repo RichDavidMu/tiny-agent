@@ -22,10 +22,26 @@ import { selectSession } from '@/lib/session.ts';
 class Stream {
   loading = false;
   params: TaskReq | null = null;
+  ready = false;
+  readyProgress: string = '';
   constructor() {
     makeAutoObservable(this, {
       params: false,
     });
+    this.init();
+  }
+
+  private getServiceProgress() {
+    return service.getLLMProgress();
+  }
+
+  async init() {
+    const timer = setInterval(() => {
+      this.readyProgress = this.getServiceProgress();
+    }, 1000);
+    await service.waitForReady();
+    clearInterval(timer);
+    this.ready = true;
   }
   async task({ input }: { input: string }) {
     this.params = { input, sessionId: rootStore.sessionStore.sessionId };

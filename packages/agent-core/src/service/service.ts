@@ -15,7 +15,7 @@ class Service {
   private readonly toolActor = new ToolActor();
   private mcpHost = new MCPClientHost(this.toolActor);
 
-  private async waitForReady(): Promise<void> {
+  async waitForReady(): Promise<void> {
     if (llmController.ready) return;
     await new Promise<void>((resolve) => {
       const timer = setInterval(() => {
@@ -25,6 +25,10 @@ class Service {
         }
       }, 200);
     });
+  }
+
+  getLLMProgress(): string {
+    return llmController.planLLM.progressText;
   }
 
   async taskStream(params: TaskReq): Promise<ReadableStream<AgentChunk>> {

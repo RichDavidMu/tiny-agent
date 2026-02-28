@@ -44,13 +44,12 @@ const Footer = observer(() => {
         <PromptInputTextarea placeholder="Type your prompt here..." />
         <PromptInputActions className="justify-end px-2 pb-2">
           <PromptInputAction
-            tooltip={'send message'}
-            // tooltip={llm.ready ? 'Send Message' : `Loading Model: \n${llm.progressText}`}
+            tooltip={stream.ready ? 'Send Message' : `Loading Model: \n${stream.readyProgress}`}
             className="max-w-sm"
           >
             <Button
               size="icon"
-              disabled={!inputStore.input.trim() || stream.loading}
+              disabled={!inputStore.input.trim() || stream.loading || !stream.ready}
               onClick={() => inputStore.handleSend()}
               className="h-9 w-9 rounded-full"
             >
