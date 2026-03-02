@@ -54,6 +54,12 @@
     ],
     "packages/**/*.d.ts": [
       "eslint --cache --fix"
+    ],
+    "app/*/{src,types}/**/*.{ts,tsx}": [
+      "eslint --quiet --cache --fix"
+    ],
+    "app/**/*.d.ts": [
+      "eslint --cache --fix"
     ]
   }
 }

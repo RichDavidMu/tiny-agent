@@ -28,8 +28,10 @@ Tiny-agent
 ### 🌐 完全浏览器端运行
 
 - **零服务器依赖**：所有 AI 推理完全在浏览器中运行，使用 WebLLM 和 WebGPU
-- **无需 API Key**：不需要任何第三方 API，零成本使用
+- **无需 API Key**：不需要任何第三方 API，**完全免费使用** - 节省数千甚至数万元的 API 调用费用
 - **完全隐私**：所有数据保留在本地设备，永不上传
+
+> 💰 **成本节省**：传统的云端 AI API 每 1K tokens 需要花费 ¥0.01-0.2 元。使用 WebLLM 在浏览器本地运行，您的成本是 **¥0** - 无论使用多少次。这意味着无限制的 AI 交互，无需担心 API 账单。
 
 ### 🏗️ 先进的 Agent 架构
 
@@ -110,7 +112,7 @@ tiny-agent/
 
 ### AI/LLM
 
-- **@mlc-ai/web-llm** - 浏览器中的 LLM 推理（自定义 fork）
+- **@mlc-ai/web-llm** - 浏览器中的 LLM 推理（自定义 fork）- **彻底消除昂贵的 API 成本**
 - **WebGPU** - 硬件加速的图形和计算 API
 - **Web Workers** - 多线程 LLM 推理
 
@@ -218,7 +220,7 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 
 ## 🙏 致谢
 
-- [WebLLM](https://github.com/mlc-ai/web-llm) - 浏览器中的 LLM 推理引擎
+- [WebLLM](https://github.com/mlc-ai/web-llm) - 浏览器中的 LLM 推理引擎，**彻底消除 API 成本，实现真正免费的 AI 应用**
 - [shadcn/ui](https://ui.shadcn.com/) - 精美的 UI 组件
 - [Radix UI](https://www.radix-ui.com/) - 无障碍的 UI 原语
 

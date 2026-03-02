@@ -1,15 +1,15 @@
 import { Link } from 'react-router-dom';
 import {
   Bot,
-  Globe,
-  Lock,
-  Zap,
-  Database,
-  Cpu,
   Code,
-  Layers,
+  Cpu,
+  Database,
   GitBranch,
+  Globe,
+  Layers,
+  Lock,
   Workflow,
+  Zap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -22,10 +22,11 @@ function Home() {
           tiny-agent
         </h1>
         <p className="max-w-[750px] text-lg text-muted-foreground sm:text-xl">
-          完全前端驱动的 AI Agent，基于 WebLLM 技术
+          完全前端驱动的 AI Agent，基于 WebLLM 技术，零 API 成本
         </p>
         <p className="max-w-[600px] text-muted-foreground">
-          在浏览器中体验大语言模型的强大能力。无需服务器，完全隐私，闪电般的响应速度。
+          在浏览器中体验大语言模型的强大能力。无需服务器，完全隐私，闪电般的响应速度。节省数千元 API
+          调用费用。
         </p>
         <Button asChild size="lg">
           <Link to="/chat">开始对话</Link>
@@ -80,9 +81,9 @@ function Home() {
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
               <Globe className="h-6 w-6 text-primary" />
             </div>
-            <h3 className="mb-2 text-xl font-bold">无需服务器</h3>
+            <h3 className="mb-2 text-xl font-bold">零成本使用</h3>
             <p className="text-sm text-muted-foreground">
-              完全前端驱动，无需后端、API Key，零成本使用。
+              完全前端驱动，无需后端、API Key，彻底告别昂贵的 API 调用费用。
             </p>
           </div>
 
@@ -218,7 +219,9 @@ function Home() {
         <div className="mx-auto grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div className="rounded-xl border bg-card p-4 transition-all hover:shadow-md">
             <div className="font-bold text-primary">WebLLM</div>
-            <div className="text-sm text-muted-foreground">浏览器中的高性能 LLM 推理</div>
+            <div className="text-sm text-muted-foreground">
+              浏览器中的高性能 LLM 推理，零 API 成本
+            </div>
           </div>
 
           <div className="rounded-xl border bg-card p-4 transition-all hover:shadow-md">
@@ -260,6 +263,63 @@ function Home() {
             <div className="font-bold text-primary">IndexedDB</div>
             <div className="text-sm text-muted-foreground">浏览器端数据持久化</div>
           </div>
+        </div>
+      </section>
+
+      {/* Cost Comparison Section */}
+      <section className="space-y-6 py-12 md:py-16">
+        <h2 className="text-center text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+          成本对比
+        </h2>
+        <div className="mx-auto max-w-4xl">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="rounded-xl border-2 border-muted bg-card p-6">
+              <div className="mb-4 text-center">
+                <h3 className="text-2xl font-bold text-muted-foreground">传统 API 方案</h3>
+              </div>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">每 1K tokens 成本</span>
+                  <span className="font-bold text-destructive">¥0.01-0.2</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">月度使用限制</span>
+                  <span className="font-bold text-destructive">受预算限制</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">年度成本估算</span>
+                  <span className="font-bold text-destructive">¥1,000-10,000+</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border-2 border-primary bg-primary/5 p-6 shadow-lg">
+              <div className="mb-4 text-center">
+                <div className="mb-2 inline-block rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
+                  推荐
+                </div>
+                <h3 className="text-2xl font-bold text-primary">Tiny-Agent (WebLLM)</h3>
+              </div>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">每 1K tokens 成本</span>
+                  <span className="font-bold text-primary">¥0</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">月度使用限制</span>
+                  <span className="font-bold text-primary">无限制</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">年度成本估算</span>
+                  <span className="font-bold text-primary">¥0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            💰 使用 WebLLM 技术，在浏览器本地运行 AI 模型，彻底消除 API
+            调用成本。无论使用多少次，永远免费。
+          </p>
         </div>
       </section>
 

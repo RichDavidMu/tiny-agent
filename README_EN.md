@@ -28,8 +28,10 @@ English | [简体中文](./README.md)
 ### 🌐 Fully Browser-Based
 
 - **Zero Server Dependency**: All AI inference runs entirely in the browser using WebLLM and WebGPU
-- **No API Key Required**: No third-party APIs needed, zero cost to use
+- **No API Key Required**: No third-party APIs needed, **completely free to use** - save hundreds or thousands of dollars in API costs
 - **Complete Privacy**: All data stays on your local device, never uploaded
+
+> 💰 **Cost Savings**: Traditional cloud-based AI APIs can cost $0.002-0.03 per 1K tokens. With WebLLM running locally in your browser, you pay **$0** - no matter how much you use. This means unlimited AI interactions without worrying about API bills.
 
 ### 🏗️ Advanced Agent Architecture
 
@@ -110,7 +112,7 @@ tiny-agent/
 
 ### AI/LLM
 
-- **@mlc-ai/web-llm** - Browser-based LLM inference (custom fork)
+- **@mlc-ai/web-llm** - Browser-based LLM inference (custom fork) - **eliminates expensive API costs**
 - **WebGPU** - Hardware-accelerated graphics and compute API
 - **Web Workers** - Multi-threaded LLM inference
 
@@ -218,7 +220,7 @@ MIT License - See [LICENSE](LICENSE) file for details
 
 ## 🙏 Acknowledgments
 
-- [WebLLM](https://github.com/mlc-ai/web-llm) - Browser-based LLM inference engine
+- [WebLLM](https://github.com/mlc-ai/web-llm) - Browser-based LLM inference engine that **eliminates API costs and enables truly free AI applications**
 - [shadcn/ui](https://ui.shadcn.com/) - Beautiful UI components
 - [Radix UI](https://www.radix-ui.com/) - Accessible UI primitives
 
