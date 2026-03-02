@@ -5,6 +5,7 @@ import {
   Cpu,
   Database,
   GitBranch,
+  Github,
   Globe,
   Layers,
   Lock,
@@ -16,6 +17,25 @@ import { Button } from '@/components/ui/button';
 function Home() {
   return (
     <div className="mx-auto max-w-screen-2xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* GitHub Link in Top Right */}
+      <div className="fixed right-4 top-4 z-50">
+        <Button
+          variant="ghost"
+          size="icon"
+          asChild
+          className="h-10 w-10 rounded-full hover:bg-accent"
+        >
+          <a
+            href="https://github.com/RichDavidMu/tiny-agent"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub"
+          >
+            <Github className="h-5 w-5" />
+          </a>
+        </Button>
+      </div>
+
       {/* Hero Section */}
       <section className="flex flex-col items-center justify-center space-y-4 py-24 text-center md:py-32">
         <h1 className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-4xl font-extrabold text-transparent sm:text-5xl md:text-6xl lg:text-7xl">
@@ -28,9 +48,20 @@ function Home() {
           在浏览器中体验大语言模型的强大能力。无需服务器，完全隐私，闪电般的响应速度。节省数千元 API
           调用费用。
         </p>
-        <Button asChild size="lg">
-          <Link to="/chat">开始对话</Link>
-        </Button>
+        <div className="flex gap-4">
+          <Button asChild size="lg">
+            <Link to="/chat">开始对话</Link>
+          </Button>
+          <Button asChild size="lg" variant="outline">
+            <a
+              href="https://github.com/RichDavidMu/tiny-agent"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              查看源码
+            </a>
+          </Button>
+        </div>
       </section>
 
       {/* Demo Video Section */}
