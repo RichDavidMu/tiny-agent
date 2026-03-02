@@ -65,6 +65,10 @@ English | [简体中文](./README.md)
 - **JavaScript Executor**: Execute JavaScript in a sandboxed environment
 - **Writing Expert**: Writing and content creation assistance
 
+### To Be Done
+
+- Context memory
+
 ## 🏛️ Project Architecture
 
 ```

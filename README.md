@@ -65,6 +65,10 @@ Tiny-agent
 - **JavaScript Executor**：沙箱环境中执行 JavaScript
 - **Writing Expert**：写作和内容创作辅助
 
+### To Be Done
+
+- 上下文记忆
+
 ## 🏛️ 项目架构
 
 ```
